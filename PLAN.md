@@ -98,7 +98,7 @@ mockup ใน `design-ui/` มีของหลายอย่างที่ P
 - เข้าถึงได้โดยไม่ต้อง login (เป็นลิงก์สาธารณะ)
 - `npm run lint`, `npm run build` ผ่าน
 
-**Status:** [ ] not started
+**Status:** [x] done
 
 ---
 
