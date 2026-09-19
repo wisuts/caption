@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { captions, captionVersions } from "@/lib/db/schema";
 import type { Caption, CaptionVersion } from "@/lib/types";
@@ -58,6 +58,19 @@ export async function getCaptionByIdDb(id: string): Promise<Caption | undefined>
 export async function getPendingReviewCaptionsDb(): Promise<Caption[]> {
   const rows = await db.query.captions.findMany({
     where: and(eq(captions.isDeleted, false), eq(captions.status, "pending_review")),
+    orderBy: [desc(captions.updatedAt)],
+    with: { versions: true },
+  });
+  return rows.map((row) => toCaption(row, row.versions));
+}
+
+/** คลังงานที่ผ่านแล้ว (PRD 4.3) — สถานะ "ผ่าน" และ "ลงแล้ว" เท่านั้น */
+export async function getArchivedCaptionsDb(): Promise<Caption[]> {
+  const rows = await db.query.captions.findMany({
+    where: and(
+      eq(captions.isDeleted, false),
+      inArray(captions.status, ["approved", "published"])
+    ),
     orderBy: [desc(captions.updatedAt)],
     with: { versions: true },
   });

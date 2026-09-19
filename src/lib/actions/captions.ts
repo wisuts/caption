@@ -214,3 +214,42 @@ export async function submitCurrentDraftForReview(
   revalidatePath("/");
   redirect(`/admin/${captionId}`);
 }
+
+export type PublishState = {
+  error?: string;
+};
+
+/**
+ * "ลงแล้ว" (PRD 5.3) — กดเมื่อเอาไปโพสต์จริงแล้ว ทำได้เฉพาะชิ้นที่สถานะ "ผ่าน" เท่านั้น
+ * ชิ้นงานจะย้ายไปอยู่ในคลังงานที่ผ่านแล้ว
+ */
+export async function markCaptionPublished(
+  _prevState: PublishState,
+  formData: FormData
+): Promise<PublishState> {
+  const captionId = String(formData.get("captionId") ?? "").trim();
+  if (!captionId) {
+    return { error: "ไม่พบข้อมูลชิ้นงาน กรุณารีเฟรชหน้านี้แล้วลองใหม่" };
+  }
+
+  const updated = await db
+    .update(captions)
+    .set({ status: "published", updatedAt: new Date() })
+    .where(
+      and(
+        eq(captions.id, captionId),
+        eq(captions.isDeleted, false),
+        eq(captions.status, "approved")
+      )
+    )
+    .returning({ id: captions.id });
+
+  if (updated.length === 0) {
+    return { error: "ชิ้นงานนี้ไม่ได้อยู่ในสถานะ \"ผ่าน\" แล้ว กรุณารีเฟรชหน้านี้" };
+  }
+
+  revalidatePath("/admin");
+  revalidatePath(`/admin/${captionId}`);
+  revalidatePath("/archive");
+  redirect(`/admin/${captionId}`);
+}

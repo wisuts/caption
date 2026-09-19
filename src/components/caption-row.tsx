@@ -5,7 +5,7 @@ import { ChannelBadge } from "@/components/channel-badge";
 import { StatusBadge } from "@/components/status-badge";
 import type { Caption } from "@/lib/types";
 import { formatThaiDate, formatThaiDateTime } from "@/lib/thai-date";
-import { getLatestSubmittedVersion } from "@/lib/mock-data";
+import { getLatestSubmittedVersion } from "@/lib/caption-helpers";
 
 export function CaptionRow({
   caption,
