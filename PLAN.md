@@ -80,7 +80,7 @@ mockup ใน `design-ui/` มีของหลายอย่างที่ P
 - validate ฝั่ง server ครบตามกฎข้อ 7 ของ PRD
 - `npm run lint`, `npm run build` ผ่าน มีข้อมูลทดสอบในฐานข้อมูลจริง (บอกผู้ใช้ว่าเป็นข้อมูลทดสอบ ต้องลบทีหลังถ้าจะเอาไปใช้งานจริง)
 
-**Status:** [ ] not started
+**Status:** [x] done
 
 ---
 
