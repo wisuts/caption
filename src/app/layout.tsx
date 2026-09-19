@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Sans, IBM_Plex_Sans_Thai } from "next/font/google";
+import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
 
 // IBM Plex Sans สำหรับข้อความอังกฤษ ตามที่กำหนดไว้ใน DESIGN.md
@@ -28,7 +29,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="th"
       className={`${ibmPlexSans.variable} ${ibmPlexSansThai.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="flex min-h-full flex-col bg-background">
+        <SiteHeader />
+        <div className="flex flex-1 flex-col">{children}</div>
+      </body>
     </html>
   );
 }

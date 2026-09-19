@@ -1,17 +1,46 @@
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { CaptionRow } from "@/components/caption-row";
+import { EmptyState } from "@/components/empty-state";
+import { buttonVariants } from "@/components/ui/button";
+import { getPendingReviewCaptions } from "@/lib/mock-data";
 
-export default function Home() {
+// หน้าคิวรอตรวจ (PRD 4.1) — หน้าแรกที่หัวหน้าเปิด ไม่ต้อง login
+export default function ReviewQueuePage() {
+  const items = getPendingReviewCaptions();
+
   return (
-    <main className="flex min-h-full flex-1 flex-col items-center justify-center gap-space-md bg-background p-space-lg text-center">
-      <span className="rounded-full bg-primary-container px-space-md py-space-xs text-label-sm font-medium tracking-wide text-on-primary uppercase">
-        Phase 0
-      </span>
-      <h1 className="text-display-lg text-on-background">คิวตรวจแคปชัน</h1>
-      <p className="max-w-md text-body-lg text-on-surface-variant">
-        วางโครงโปรเจกต์ ใส่โทนสีและตัวอักษรตาม DESIGN.md เรียบร้อยแล้ว
-        ยังไม่มีหน้าจอจริง — หน้าจอจริงจะเริ่มสร้างใน Phase 1
-      </p>
-      <Button>ปุ่มตัวอย่าง (ทดสอบธีม)</Button>
+    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-space-lg px-gutter-desktop py-space-xl">
+      <div className="flex flex-col gap-space-xs">
+        <h1 className="text-display-lg text-on-background">
+          รอตรวจ {items.length > 0 && `(${items.length})`}
+        </h1>
+        <p className="text-body-md text-on-surface-variant">
+          คลิกเลือกรายการเพื่อเปิดอ่านแคปชัน ตรวจรูปประกอบ
+          และส่งผลการตรวจได้ทันที (เรียงลำดับส่งเข้ามาใหม่สุดไว้ด้านบน)
+        </p>
+      </div>
+
+      {items.length === 0 ? (
+        <EmptyState title="ตอนนี้ไม่มีงานรอตรวจ" />
+      ) : (
+        <div className="flex flex-col gap-space-md">
+          {items.map((caption) => (
+            <CaptionRow
+              key={caption.id}
+              caption={caption}
+              href={`/items/${caption.id}`}
+              action={
+                <Link
+                  href={`/items/${caption.id}`}
+                  className={buttonVariants({ variant: "default" })}
+                >
+                  ตรวจงานนี้
+                </Link>
+              }
+            />
+          ))}
+        </div>
+      )}
     </main>
   );
 }
