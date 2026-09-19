@@ -61,7 +61,7 @@ mockup ใน `design-ui/` มีของหลายอย่างที่ P
 - หน้าตา สี ระยะห่าง ตรงกับ `design-ui/` และ `DESIGN.md` (เทียบด้วยตาหลังสร้างเสร็จ)
 - `npm run lint`, `npm run build` ผ่าน
 
-**Status:** [ ] not started
+**Status:** [x] done
 
 ---
 
