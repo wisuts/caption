@@ -5,6 +5,7 @@ import { ChannelBadge } from "@/components/channel-badge";
 import { StatusBadge } from "@/components/status-badge";
 import { VersionTimeline } from "@/components/version-timeline";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { SubmitNewVersionButton } from "@/components/submit-new-version-button";
 import { getCaptionByIdDb } from "@/lib/db/queries";
 import { getLatestSubmittedVersion, hasUnsentEdit } from "@/lib/caption-helpers";
 import { formatThaiDate, formatThaiDateTime } from "@/lib/thai-date";
@@ -130,7 +131,7 @@ export default async function AdminItemDetailPage({
           <section className="flex flex-col gap-space-sm rounded-xl bg-surface-container-lowest p-space-lg shadow-md">
             <h2 className="text-headline-sm text-on-surface">จัดการชิ้นงาน</h2>
             {canSubmitNewVersion && (
-              <Button className="w-full">ส่งเวอร์ชันใหม่ให้ตรวจ</Button>
+              <SubmitNewVersionButton captionId={caption.id} />
             )}
             {canMarkPublished && (
               <Button className="w-full">กดว่า &quot;ลงแล้ว&quot;</Button>
@@ -139,7 +140,8 @@ export default async function AdminItemDetailPage({
               ลบชิ้นงาน
             </Button>
             <p className="text-body-sm text-on-surface-variant">
-              ปุ่มในกล่องนี้ยังไม่ทำงานจริง จะเริ่มใช้งานได้ในเฟสถัดไป
+              ปุ่ม &quot;กดว่าลงแล้ว&quot; และ &quot;ลบชิ้นงาน&quot; ยังไม่ทำงานจริง
+              จะเริ่มใช้งานได้ในเฟสถัดไป
             </p>
           </section>
 

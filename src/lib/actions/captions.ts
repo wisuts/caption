@@ -153,3 +153,64 @@ export async function submitCaptionForReview(
   revalidatePath("/");
   redirect("/admin");
 }
+
+export type SubmitDraftState = {
+  error?: string;
+};
+
+/**
+ * "ส่งเวอร์ชันใหม่ให้ตรวจ" (PRD 5.3) — ปุ่มในหน้ารายละเอียดฝั่งเจ้าของ
+ * เก็บ "ข้อความที่แก้ค้างไว้" ตอนนี้เป็นเวอร์ชันใหม่ทันที โดยไม่ต้องเปิดฟอร์มแก้ไข
+ * ใช้ได้ทั้งชิ้นที่ยังเป็นร่าง (ยังไม่เคยส่งตรวจเลย) และชิ้นที่เคยส่งตรวจไปแล้ว
+ */
+export async function submitCurrentDraftForReview(
+  _prevState: SubmitDraftState,
+  formData: FormData
+): Promise<SubmitDraftState> {
+  const captionId = String(formData.get("captionId") ?? "").trim();
+  if (!captionId) {
+    return { error: "ไม่พบข้อมูลชิ้นงาน กรุณารีเฟรชหน้านี้แล้วลองใหม่" };
+  }
+
+  const [current] = await db
+    .select({
+      title: captions.title,
+      pendingDraftText: captions.pendingDraftText,
+    })
+    .from(captions)
+    .where(and(eq(captions.id, captionId), eq(captions.isDeleted, false)));
+
+  if (!current) {
+    return { error: "ไม่พบชิ้นงานนี้ อาจถูกลบไปแล้ว" };
+  }
+  if (!current.title.trim()) {
+    return { error: "หัวข้อสั้นยังว่างอยู่ กรุณากด \"แก้ไข\" แล้วกรอกหัวข้อก่อนส่งตรวจ" };
+  }
+  if (!current.pendingDraftText.trim()) {
+    return { error: "ยังไม่มีตัวแคปชัน กรุณากด \"แก้ไข\" แล้วพิมพ์ข้อความก่อนส่งตรวจ" };
+  }
+
+  const [{ nextVersion }] = await db
+    .select({
+      nextVersion: sql<number>`coalesce(max(${captionVersions.versionNumber}), 0) + 1`,
+    })
+    .from(captionVersions)
+    .where(eq(captionVersions.captionId, captionId));
+
+  await db.insert(captionVersions).values({
+    captionId,
+    versionNumber: nextVersion,
+    text: current.pendingDraftText,
+    reviewResult: "pending",
+  });
+
+  await db
+    .update(captions)
+    .set({ status: "pending_review", updatedAt: new Date() })
+    .where(eq(captions.id, captionId));
+
+  revalidatePath("/admin");
+  revalidatePath(`/admin/${captionId}`);
+  revalidatePath("/");
+  redirect(`/admin/${captionId}`);
+}
