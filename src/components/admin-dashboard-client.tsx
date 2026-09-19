@@ -4,8 +4,9 @@ import Link from "next/link";
 import { useMemo, useState, type ReactNode } from "react";
 import { CaptionRow } from "@/components/caption-row";
 import { EmptyState } from "@/components/empty-state";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { signOutAction } from "@/lib/actions/auth";
 import {
   Select,
   SelectContent,
@@ -63,9 +64,16 @@ export function AdminDashboardClient({ allCaptions }: { allCaptions: Caption[] }
             ดูสถานะ เพิ่ม แก้ไข และส่งแคปชันให้หัวหน้าตรวจ
           </p>
         </div>
-        <Link href="/admin/new" className={buttonVariants({ variant: "default" })}>
-          + เพิ่มแคปชันใหม่
-        </Link>
+        <div className="flex items-center gap-space-sm">
+          <Link href="/admin/new" className={buttonVariants({ variant: "default" })}>
+            + เพิ่มแคปชันใหม่
+          </Link>
+          <form action={signOutAction}>
+            <Button type="submit" variant="ghost">
+              ออกจากระบบ
+            </Button>
+          </form>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-space-sm sm:grid-cols-5">
