@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+
+<html lang="th"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"secondary":"#565e74","on-primary":"#ffffff","on-secondary":"#ffffff","tertiary-container":"#006c63","on-tertiary-container":"#81eddf","outline":"#777587","background":"#f8f9ff","tertiary-fixed-dim":"#6bd8cb","primary-fixed-dim":"#c3c0ff","on-surface-variant":"#464555","surface-container-highest":"#d3e4fe","on-surface":"#0b1c30","on-tertiary":"#ffffff","on-background":"#0b1c30","primary-container":"#4f46e5","surface-bright":"#f8f9ff","primary-fixed":"#e2dfff","surface-container-lowest":"#ffffff","secondary-fixed-dim":"#bec6e0","primary":"#3525cd","surface-container-low":"#eff4ff","on-secondary-fixed-variant":"#3f465c","tertiary":"#00524b","secondary-fixed":"#dae2fd","on-primary-container":"#dad7ff","surface-variant":"#d3e4fe","outline-variant":"#c7c4d8","on-primary-fixed":"#0f0069","on-primary-fixed-variant":"#3323cc","surface-dim":"#cbdbf5","error":"#ba1a1a","tertiary-fixed":"#89f5e7","surface-container":"#e5eeff","secondary-container":"#dae2fd","surface-tint":"#4d44e3","surface-container-high":"#dce9ff","surface":"#f8f9ff","on-secondary-container":"#5c647a","on-tertiary-fixed-variant":"#005049","on-error":"#ffffff","inverse-on-surface":"#eaf1ff","on-tertiary-fixed":"#00201d","inverse-primary":"#c3c0ff","on-error-container":"#93000a","inverse-surface":"#213145","error-container":"#ffdad6","on-secondary-fixed":"#131b2e"},borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},spacing:{"gutter":"1rem","space-lg":"1.5rem","space-sm":"0.5rem","margin":"1rem","space-md":"1rem","space-xs":"0.25rem","gutter-desktop":"1.5rem","space-xl":"2rem","margin-desktop":"2rem"},fontFamily:{"display-lg":["IBM Plex Sans"],"body-sm":["IBM Plex Sans"],"headline-lg":["IBM Plex Sans"],"label-sm":["IBM Plex Sans"],"label-md":["IBM Plex Sans"],"headline-md":["IBM Plex Sans"],"body-lg":["IBM Plex Sans"],"body-md":["IBM Plex Sans"],"headline-sm":["IBM Plex Sans"]},fontSize:{"display-lg":["36px",{lineHeight:"48px",letterSpacing:"-0.02em",fontWeight:"600"}],"body-sm":["13px",{lineHeight:"20px",fontWeight:"400"}],"headline-lg":["24px",{lineHeight:"36px",letterSpacing:"-0.015em",fontWeight:"600"}],"label-sm":["11px",{lineHeight:"14px",letterSpacing:"0.04em",fontWeight:"600"}],"label-md":["12px",{lineHeight:"16px",letterSpacing:"0.02em",fontWeight:"500"}],"headline-md":["20px",{lineHeight:"30px",letterSpacing:"-0.01em",fontWeight:"600"}],"body-lg":["16px",{lineHeight:"28px",fontWeight:"400"}],"body-md":["14px",{lineHeight:"24px",fontWeight:"400"}],"headline-sm":["16px",{lineHeight:"24px",fontWeight:"600"}]}}}}</script></head><body class="bg-background font-body-md text-on-surface antialiased min-h-screen"><header class="fixed top-0 left-0 w-full z-50 bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 w-full px-gutter-desktop flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-md min-w-[280px]"><img alt="CaptionQueue Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UkVOBBSgxV8pAGT8TEe903UNIRvkQ8MXCo24sHnE7oib8kaCiiMUrjf9cWMWVo881iJ_HlNQCpSZkyVlcgoJ1c51gMhJaorGZESmv1OB1XUezDaK9dZTE_z0uT9QPwHC71XlfyNFqjtgOY5vFa8EuMNAbhcfUjYtLjaXS8CS9sQ6DsOb7IqTx2FVEzG02TjuzTijSmDlPzJKSeESXgKj4S-Unt8pPPS9d3CzHVooiD3aMvJwBmtAA6"/><div class="flex flex-col justify-center"><div class="flex items-center gap-space-xs"><span class="font-headline-sm text-headline-sm text-on-surface">คิวตรวจแคปชัน</span><span class="px-space-xs py-0.5 rounded bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">v2.4</span></div><span class="font-body-sm text-body-sm text-on-surface-variant leading-none">FutureSkill &amp; SkillPass Content Review</span></div></div><nav class="hidden xl:flex items-center gap-space-xs bg-surface-container-low p-space-xs rounded-xl" data-active-classes="bg-surface-container text-primary font-semibold"><a class="flex items-center gap-space-xs px-space-md py-1.5 rounded-lg font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all" data-path="review-queue" href="#"><span>คิวรอตรวจ</span><span class="px-1.5 py-0.2 rounded-full bg-primary-container text-on-primary font-label-sm text-label-sm font-semibold">5</span></a><a class="flex items-center gap-space-xs px-space-md py-1.5 rounded-lg font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all" data-path="approved-archive" href="#"><span>คลังงานที่ผ่านแล้ว</span></a><a aria-current="page" class="flex items-center gap-space-xs px-space-md py-1.5 rounded-lg transition-all bg-surface-container text-primary font-semibold" data-path="content-management" href="#"><span>จัดการแคปชัน (หลังบ้าน)</span></a></nav><div class="flex items-center gap-space-sm"><button class="hidden md:inline-flex items-center gap-space-xs px-space-md py-2 rounded-lg bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors" type="button"><span class="material-symbols-outlined text-[18px]">link</span><span>คัดลอกลิงก์คิวให้หัวหน้า</span></button><button class="inline-flex items-center gap-space-xs px-space-md py-2 rounded-lg bg-primary-container text-on-primary font-label-md text-label-md hover:bg-primary transition-colors shadow-sm" type="button"><span class="material-symbols-outlined text-[18px]">add</span><span>+ เพิ่มแคปชันใหม่</span></button><div class="h-6 w-px bg-surface-container mx-space-xs hidden sm:block"></div><div class="flex items-center gap-space-sm pl-space-xs"><img alt="Profile" class="w-8 h-8 rounded-full object-cover ring-2 ring-primary/20" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQcyU5cB2qd5w8_eIuRPtGCJDVLAs7FSbe9hTWAWZQA1GKg1T28j8bhrwvOg-w8Ap9ZwjMy1QC4Ruwc8VR1DFcyNt0dNyWzya6Xo2QbAiQpHwNUKQPw5pbUi5FxJZiPrKufJ_kvbZiZLIQQFOBNgUPKd2iJ44ElXpPLt4amm0Z8HZCQisZGNvT549AR2m-IcyCFwgtXyCIAYHHIMKxD2k9zkJSjG3BwmoZOyT-nXIm_2KiAgM29wg"/><div class="hidden 2xl:flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface leading-tight">กานต์รวี</span><span class="font-label-sm text-label-sm text-on-surface-variant">Copywriter</span></div></div></div></div></header><main class="w-full pt-16 bg-background min-h-screen"><div class="flex flex-col w-full pb-32">
+<!-- Top Progress Indicator Strip -->
+<div class="w-full bg-surface-container-low px-gutter-desktop py-space-sm shadow-sm flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<a class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded bg-surface-container-lowest hover:bg-surface text-on-surface-variant hover:text-primary transition-colors font-label-md text-label-md shadow-sm" href="#">
+<span class="material-symbols-outlined text-[16px]">arrow_back</span>
+<span>กลับหน้ารวมงาน</span>
+</a>
+<span class="text-outline-variant">/</span>
+<span class="font-label-md text-label-md text-primary font-semibold">สร้างหรือแก้ไขแคปชัน</span>
+</div>
+<div class="flex items-center gap-space-md">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span>สถานะ: ร่าง (Draft)</span>
+</span>
+<span class="text-outline-variant hidden sm:inline">|</span>
+<div class="hidden sm:flex items-center gap-1 text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[16px] text-tertiary">cloud_done</span>
+<span>ระบบบันทึกแบบร่างอัตโนมัติแล้วเมื่อ 2 นาทีที่แล้ว</span>
+</div>
+</div>
+</div>
+<!-- Form Layout Body -->
+<div class="w-full max-w-5xl mx-auto px-gutter-desktop py-space-xl space-y-space-xl">
+<!-- Title and Validation Notice Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md">
+<div class="space-y-1">
+<div class="flex items-center gap-space-xs">
+<span class="px-2 py-0.5 rounded bg-primary-container text-on-primary font-label-sm text-label-sm">Editorial Desk</span>
+<span class="text-outline-variant">•</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Draft ID: CQ-2025-0849</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">สร้างหรือแก้ไขแคปชันใหม่</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">ปรับแต่งคำโฆษณา เนื้อหาโปรโมชัน และแนบไฟล์สำหรับส่งมอบเข้าสู่กระบวนการตรวจรับรอง</p>
+</div>
+<div class="bg-surface-container p-space-md rounded-xl max-w-sm shadow-sm flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-primary-container text-[20px] shrink-0 mt-0.5">info</span>
+<div class="text-left">
+<p class="font-label-md text-label-md text-on-surface font-semibold">เงื่อนไขการส่งตรวจ</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">กรอกข้อมูลที่มีเครื่องหมาย <span class="text-error font-semibold">*</span> ให้ครบถ้วนเพื่อส่งงานเข้าคิวตรวจของหัวหน้าทีม</p>
+</div>
+</div>
+</div>
+<!-- Main Workspace Container (Bento style panels) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+<!-- Left / Main Form Column (8 Cols) -->
+<form class="lg:col-span-8 space-y-space-lg" id="captionForm" onsubmit="event.preventDefault();">
+<!-- SECTION 1: ข้อมูลทั่วไป (General Info) -->
+<section class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm space-y-space-md">
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="w-6 h-6 rounded-md bg-primary/10 text-primary flex items-center justify-center font-label-sm text-label-sm font-semibold">1</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">ข้อมูลทั่วไป (General Info)</h2>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">บังคับ 3 รายการ</span>
+</div>
+<!-- Short Title -->
+<div class="space-y-1.5">
+<label class="flex items-center justify-between font-label-md text-label-md text-on-surface font-semibold" for="titleInput">
+<span class="flex items-center gap-1">หัวข้อสั้น (Short Title) <span class="text-error">*</span></span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-normal">ความยาวแนะนำไม่เกิน 60 ตัวอักษร</span>
+</label>
+<input class="w-full bg-surface-container-lowest text-on-surface font-body-md text-body-md px-space-md py-2.5 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-container focus:bg-surface-container-lowest placeholder:text-outline/60" id="titleInput" placeholder="เช่น เปิดตัวคอร์ส AI Data Analyst ลดราคา 50%" required="" type="text" value="เปิดตัวคอร์ส Generative AI for Professional ลดพิเศษ Early Bird 50%"/>
+</div>
+<!-- Brand & Channel Dropdowns (2 Cols) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md pt-space-xs">
+<!-- Brand Selection -->
+<div class="space-y-1.5">
+<label class="flex items-center gap-1 font-label-md text-label-md text-on-surface font-semibold" for="brandSelect">
+<span>แบรนด์ต้นทาง (Brand)</span>
+<span class="text-error">*</span>
+</label>
+<div class="relative">
+<select class="w-full bg-surface-container-lowest text-on-surface font-body-md text-body-md px-space-md py-2.5 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-container appearance-none cursor-pointer pr-10" id="brandSelect" required="">
+<option selected="" value="FutureSkill">FutureSkill (ฟิวเจอร์สกิล)</option>
+<option value="SkillPass">SkillPass (สกิลพาส)</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant text-[20px]">expand_more</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">ระบบจะแท็กโทนเสียงของแบรนด์นี้โดยอัตโนมัติ</p>
+</div>
+<!-- Publishing Channel -->
+<div class="space-y-1.5">
+<label class="flex items-center gap-1 font-label-md text-label-md text-on-surface font-semibold" for="channelSelect">
+<span>ช่องทางเผยแพร่ (Channel)</span>
+<span class="text-error">*</span>
+</label>
+<div class="relative">
+<select class="w-full bg-surface-container-lowest text-on-surface font-body-md text-body-md px-space-md py-2.5 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-container appearance-none cursor-pointer pr-10" id="channelSelect" required="">
+<option selected="" value="Facebook">Facebook Fanpage (ฟีดหลัก)</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant text-[20px]">expand_more</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">รองรับการแสดงผลฟอร์แมตเฟซบุ๊กมาตรฐาน</p>
+</div>
+</div>
+<!-- Schedule Date & Author Name (2 Cols) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md pt-space-xs">
+<!-- Scheduled Date -->
+<div class="space-y-1.5">
+<label class="flex items-center justify-between font-label-md text-label-md text-on-surface font-semibold" for="dateInput">
+<span>กำหนดลง (Scheduled Date)</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-normal">เว้นว่างได้</span>
+</label>
+<div class="relative">
+<input class="w-full bg-surface-container-lowest text-on-surface font-body-md text-body-md px-space-md py-2.5 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-container cursor-pointer" id="dateInput" type="date" value="2025-05-18"/>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">หากเว้นว่าง ระบบจะแสดงสถานะ 'ยังไม่กำหนด'</p>
+</div>
+<!-- Author Name -->
+<div class="space-y-1.5">
+<label class="flex items-center gap-1 font-label-md text-label-md text-on-surface font-semibold" for="authorInput">
+<span>ชื่อคนเขียน (Author Name)</span>
+</label>
+<div class="relative">
+<input class="w-full bg-surface-container-low text-on-surface font-body-md text-body-md px-space-md py-2.5 rounded-lg shadow-sm focus:outline-none cursor-not-allowed" id="authorInput" readonly="" type="text" value="กานต์รวี วงศ์สวัสดิ์"/>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">lock</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">ซิงค์จากโปรไฟล์ผู้ใช้งานปัจจุบัน</p>
+</div>
+</div>
+</section>
+<!-- SECTION 2: รูปภาพประกอบ (Creative Asset Link) -->
+<section class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm space-y-space-md">
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="w-6 h-6 rounded-md bg-primary/10 text-primary flex items-center justify-center font-label-sm text-label-sm font-semibold">2</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">รูปภาพประกอบ (Creative Asset Link)</h2>
+</div>
+<span class="font-label-sm text-label-sm text-tertiary font-semibold">ไม่บังคับ</span>
+</div>
+<div class="space-y-1.5">
+<label class="flex items-center justify-between font-label-md text-label-md text-on-surface font-semibold" for="assetUrlInput">
+<span class="flex items-center gap-1">ลิงก์รูปประกอบ หรือ อาร์ตเวิร์ก (Asset URL)</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-normal">Google Drive / Figma / Canva</span>
+</label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-on-surface-variant text-[20px]">link</span>
+<input class="w-full bg-surface-container-lowest text-on-surface font-body-md text-body-md pl-10 pr-space-md py-2.5 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-container placeholder:text-outline/60" id="assetUrlInput" placeholder="https://drive.google.com/file/d/1aB2c3d4.../view?usp=sharing หรือ ลิงก์ Canva" type="url" value="https://drive.google.com/drive/folders/17sK8L4x_FutureSkill_GenAI_Launch_Pack"/>
+</div>
+</div>
+<!-- Creative Helper Info Box -->
+<div class="flex items-start gap-space-sm p-space-md rounded-lg bg-surface-container-low shadow-sm">
+<span class="text-xl">💡</span>
+<div class="text-on-surface space-y-0.5">
+<p class="font-label-md text-label-md font-semibold text-primary">คำแนะนำสำหรับไฟล์ภาพและกราฟิก:</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                กรุณาเปิดสิทธิ์ลิงก์เป็น <span class="font-semibold text-on-surface underline">"ทุกคนที่มีลิงก์สามารถดูได้ (Anyone with link can view)"</span> เพื่อให้หัวหน้าทีมและทีมกราฟิกเปิดตรวจคู่กับแคปชันได้ทันทีโดยไม่ต้องขออนุญาตเพิ่มเติม
+              </p>
+</div>
+</div>
+</section>
+<!-- SECTION 3: ตัวแคปชัน (Caption Body Content) -->
+<section class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm space-y-space-md">
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="w-6 h-6 rounded-md bg-primary/10 text-primary flex items-center justify-center font-label-sm text-label-sm font-semibold">3</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">เนื้อหาแคปชัน (Caption Body Content)</h2>
+<span class="text-error font-bold">*</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<span class="font-label-sm text-label-sm text-on-surface-variant">ตัวนับความยาว:</span>
+<span class="px-2 py-0.5 rounded font-label-md text-label-md bg-surface-container font-semibold text-primary" id="charCounter">1,124 ตัวอักษร</span>
+</div>
+</div>
+<!-- Formatting quick-tools -->
+<div class="flex flex-wrap items-center justify-between gap-space-xs p-1.5 rounded-lg bg-surface-container-low">
+<div class="flex items-center gap-1">
+<button class="px-2 py-1 rounded bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-sm text-label-sm shadow-sm transition-colors flex items-center gap-1" onclick="insertSnippet('🔥 ')" type="button">
+<span>🔥</span><span>ไฮไลต์</span>
+</button>
+<button class="px-2 py-1 rounded bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-sm text-label-sm shadow-sm transition-colors flex items-center gap-1" onclick="insertSnippet('👇 รายละเอียดคอร์ส:\n• ')" type="button">
+<span class="material-symbols-outlined text-[14px]">format_list_bulleted</span><span>หัวข้อย่อย</span>
+</button>
+<button class="px-2 py-1 rounded bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-sm text-label-sm shadow-sm transition-colors flex items-center gap-1" onclick="insertSnippet('📲 สนใจสมัครคลิก: ')" type="button">
+<span class="material-symbols-outlined text-[14px]">ads_click</span><span>ลิงก์ CTA</span>
+</button>
+<button class="px-2 py-1 rounded bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-sm text-label-sm shadow-sm transition-colors flex items-center gap-1" onclick="insertSnippet('#FutureSkill #GenAI #Upskill')" type="button">
+<span class="material-symbols-outlined text-[14px]">tag</span><span>แฮชแท็กหลัก</span>
+</button>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant pr-2 hidden sm:inline">จัดย่อหน้าเว้นวรรคให้สบายตา</span>
+</div>
+<!-- Textarea container with styled editorial background -->
+<div class="space-y-1.5">
+<textarea class="w-full bg-surface-container-lowest text-on-surface font-body-lg text-body-lg p-space-md rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-container leading-relaxed placeholder:text-outline/50 transition-all font-normal" id="captionTextarea" placeholder="พิมพ์แคปชันที่นี่... รองรับการขึ้นบรรทัดใหม่ การใช้อิโมจิ และการติดแฮชแท็ก" required="" rows="15">🔥 ยุคที่ AI ไม่ได้มาแย่งงาน แต่คนใช้ AI เป็นจะมาแทนที่คุณ!
+
+เปิดตัวคอร์สใหม่แกะกล่อง ✨ "Generative AI for High-Impact Professionals" 
+ออกแบบมาสำหรับคนทำงานยุคใหม่ที่อยากประหยัดเวลา 10 ชม./สัปดาห์ ด้วยพลังของ Prompt Engineering และ Workflow Automation
+
+สิ่งที่ผู้เรียนจะได้รับจากคอร์สนี้:
+• เทคนิคการเขียน Super Prompt สั่งการ ChatGPT &amp; Claude ให้ได้คำตอบระดับมือโปร
+• เคล็ดลับการวิเคราะห์งบและสร้าง Dashboard อัตโนมัติใน 3 คลิก
+• Case Study จริงจากองค์กรชั้นนำที่นำ AI เข้าไปสเกลยอดขายกว่า 300%
+• คลัง Prompt สำเร็จรูปกว่า 200+ ชุด นำไปใช้กับงานจริงได้ทันที
+
+⚡ พิเศษสำหรับ 100 ท่านแรกเท่านั้น!
+รับสิทธิ์เข้าเรียนในราคา Early Bird เพียง 1,990.- (จากปกติ 4,500.-)
+พร้อมรับ Certificate รับรองทักษะจาก FutureSkill หลังเรียนจบ
+
+📲 สอบถามเพิ่มเติมหรือสำรองที่นั่งด่วนที่:
+LINE OA: @futureskill (มี @ ด้วยนะ)
+หรือคลิกลิงก์ที่ภาพเพื่อดูสารบัญบทเรียนฉบับเต็ม
+
+#FutureSkill #GenerativeAI #ChatGPT #พัฒนาตนเอง #เรียนออนไลน์ #AIforBusiness #CareerGrowth</textarea>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant font-body-sm text-body-sm pt-space-xs">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span>คำแนะนำ: แนะนำให้มี Call To Action (CTA) ไม่เกิน 2 ลิงก์ต่อโพสต์</span>
+</div>
+<button class="text-error hover:underline font-label-sm text-label-sm" onclick="clearCaption()" type="button">ล้างข้อความทั้งหมด</button>
+</div>
+</section>
+</form>
+<!-- Right Column: Inspector & Live Preview Widget (4 Cols) -->
+<div class="lg:col-span-4 space-y-space-lg">
+<!-- Live Preview Pane Linear-Notion Style -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm space-y-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[20px] text-primary">visibility</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">พรีวิวโพสต์ฉบับย่อ</h3>
+</div>
+<span class="px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm">Facebook Live Mock</span>
+</div>
+<!-- Mock Feed Card -->
+<div class="bg-surface-container-low p-space-md rounded-xl space-y-space-sm shadow-sm">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-bold text-sm">
+                FS
+              </div>
+<div>
+<div class="flex items-center gap-1">
+<span class="font-label-md text-label-md text-on-surface font-bold" id="previewBrand">FutureSkill</span>
+<span class="material-symbols-outlined text-primary text-[14px]">verified</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant font-label-sm text-label-sm">
+<span id="previewDate">กำหนดลง: 18 พ.ค. 2025</span>
+<span>•</span>
+<span class="material-symbols-outlined text-[13px]">public</span>
+</div>
+</div>
+</div>
+<!-- Preview Snippet Text -->
+<p class="font-body-sm text-body-sm text-on-surface line-clamp-4 leading-normal" id="previewText">
+              🔥 ยุคที่ AI ไม่ได้มาแย่งงาน แต่คนใช้ AI เป็นจะมาแทนที่คุณ! เปิดตัวคอร์สใหม่แกะกล่อง ✨ "Generative AI for High-Impact Professionals"...
+            </p>
+<!-- Creative Link indicator -->
+<div class="rounded-lg bg-surface-container-lowest p-space-sm flex items-center gap-space-sm shadow-sm">
+<div class="w-12 h-12 rounded bg-surface-container-high flex items-center justify-center text-on-surface-variant shrink-0">
+<span class="material-symbols-outlined text-[24px] text-primary">image</span>
+</div>
+<div class="min-w-0 flex-1">
+<p class="font-label-sm text-label-sm text-on-surface font-semibold truncate">ภาพกราฟิกประกอบแคมเปญ</p>
+<p class="font-body-sm text-body-sm text-tertiary truncate" id="previewAssetStatus">พร้อมแนบลิงก์ Google Drive</p>
+</div>
+</div>
+</div>
+</div>
+<!-- System Quality Checklist Card -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm space-y-space-md">
+<h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[20px] text-tertiary">checklist</span>
+<span>เช็กลิสต์ความสมบูรณ์</span>
+</h3>
+<ul class="space-y-space-sm font-body-sm text-body-sm">
+<li class="flex items-center justify-between p-space-xs rounded bg-surface-container-low">
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-tertiary">check_circle</span>
+<span>หัวข้องาน (Short Title)</span>
+</span>
+<span class="font-label-sm text-label-sm text-tertiary font-semibold">เรียบร้อย</span>
+</li>
+<li class="flex items-center justify-between p-space-xs rounded bg-surface-container-low">
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-tertiary">check_circle</span>
+<span>ระบุแบรนด์และช่องทาง</span>
+</span>
+<span class="font-label-sm text-label-sm text-tertiary font-semibold">เรียบร้อย</span>
+</li>
+<li class="flex items-center justify-between p-space-xs rounded bg-surface-container-low">
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-tertiary">check_circle</span>
+<span>ความยาวแคปชันมากกว่า 100 คำ</span>
+</span>
+<span class="font-label-sm text-label-sm text-tertiary font-semibold">ผ่านเกณฑ์</span>
+</li>
+<li class="flex items-center justify-between p-space-xs rounded bg-surface-container-low">
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-tertiary">check_circle</span>
+<span>ใส่แฮชแท็กเพื่อการค้นหา</span>
+</span>
+<span class="font-label-sm text-label-sm text-tertiary font-semibold">7 แฮชแท็ก</span>
+</li>
+</ul>
+<div class="pt-space-xs">
+<div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant mb-1">
+<span>ความพร้อมในการส่งตรวจ</span>
+<span class="font-semibold text-primary">100%</span>
+</div>
+<div class="w-full h-2 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary-container rounded-full w-full"></div>
+</div>
+</div>
+</div>
+<!-- Revision Guideline Card -->
+<div class="bg-surface-container p-space-md rounded-xl space-y-space-xs shadow-sm">
+<div class="flex items-center gap-1.5 text-on-surface font-label-md text-label-md font-semibold">
+<span class="material-symbols-outlined text-[18px] text-primary">verified_user</span>
+<span>Editorial SLA</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+            เมื่อกดส่งตรวจ งานจะเข้าคิวรอตรวจทันที หัวหน้าทีมจะมีกำหนดตรวจและให้ฟีดแบ็กภายใน 4 ชั่วโมงทำการ (09:00 - 18:00 น.)
+          </p>
+</div>
+</div>
+</div>
+</div>
+<!-- STICKY BOTTOM ACTION FOOTER (Mandatory Fixed Bar) -->
+<aside aria-label="แถบการทำงานแบบด่วน" class="fixed bottom-0 left-0 w-full z-40 bg-surface-container-lowest/95 backdrop-blur shadow-[0_-4px_16px_rgba(0,0,0,0.06)] px-gutter-desktop py-space-sm">
+<div class="max-w-5xl mx-auto flex items-center justify-between gap-space-md">
+<!-- Left: Dismiss / Cancel Button -->
+<div>
+<button class="inline-flex items-center gap-space-xs px-space-md py-2.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-colors" onclick="window.history.back()" type="button">
+<span class="material-symbols-outlined text-[18px]">close</span>
+<span>ยกเลิก (ไม่บันทึก)</span>
+</button>
+</div>
+<!-- Right: Action Buttons Group -->
+<div class="flex items-center gap-space-sm">
+<!-- Save as Draft -->
+<button class="inline-flex items-center gap-space-xs px-space-md py-2.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md shadow-sm transition-all" onclick="saveDraftToast()" type="button">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">save</span>
+<span>บันทึกไว้ก่อน</span>
+</button>
+<!-- Submit for Review CTA -->
+<button class="inline-flex items-center gap-space-xs px-space-xl py-2.5 rounded-lg bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md shadow-md transition-all scale-100 hover:scale-[1.01] active:scale-[0.99]" onclick="submitForReview()" type="button">
+<span class="material-symbols-outlined text-[18px]">rocket_launch</span>
+<span>ส่งตรวจทันที 🚀</span>
+</button>
+</div>
+</div>
+</aside>
+<!-- Interactive Toast Notification Container (Hidden by default) -->
+<div class="fixed bottom-24 right-8 z-50 transform translate-y-8 opacity-0 pointer-events-none transition-all duration-200 bg-inverse-surface text-inverse-on-surface p-space-md rounded-xl shadow-xl flex items-center gap-space-md max-w-md" id="toastNotification">
+<span class="material-symbols-outlined text-tertiary-fixed text-[24px]" id="toastIcon">check_circle</span>
+<div>
+<p class="font-label-md text-label-md font-semibold" id="toastTitle">บันทึกฉบับร่างเรียบร้อย</p>
+<p class="font-body-sm text-body-sm text-outline-variant" id="toastMessage">คุณสามารถกลับมาแก้ไขงานต่อได้ตลอดเวลา</p>
+</div>
+</div>
+</div>
+<script>
+  // Character counter & Realtime preview sync
+  const textarea = document.getElementById('captionTextarea');
+  const counter = document.getElementById('charCounter');
+  const preview = document.getElementById('previewText');
+  const titleInput = document.getElementById('titleInput');
+  const brandSelect = document.getElementById('brandSelect');
+  const previewBrand = document.getElementById('previewBrand');
+  const dateInput = document.getElementById('dateInput');
+  const previewDate = document.getElementById('previewDate');
+  const assetUrlInput = document.getElementById('assetUrlInput');
+  const previewAssetStatus = document.getElementById('previewAssetStatus');
+
+  function updateSync() {
+    if (textarea && counter) {
+      const len = textarea.value.length;
+      counter.textContent = len.toLocaleString() + ' ตัวอักษร';
+      if (preview) {
+        preview.textContent = textarea.value.trim() || 'ยังไม่ได้ระบุเนื้อหาแคปชัน...';
+      }
+    }
+    if (brandSelect && previewBrand) {
+      previewBrand.textContent = brandSelect.value;
+    }
+    if (dateInput && previewDate) {
+      previewDate.textContent = dateInput.value ? 'กำหนดลง: ' + dateInput.value : 'กำหนดลง: ยังไม่กำหนด';
+    }
+    if (assetUrlInput && previewAssetStatus) {
+      previewAssetStatus.textContent = assetUrlInput.value.trim() ? 'พร้อมแนบลิงก์อาร์ตเวิร์ก' : 'ยังไม่ได้ใส่ลิงก์รูป';
+    }
+  }
+
+  textarea.addEventListener('input', updateSync);
+  brandSelect.addEventListener('change', updateSync);
+  dateInput.addEventListener('change', updateSync);
+  assetUrlInput.addEventListener('input', updateSync);
+
+  // Fast text snippet insertion tool
+  function insertSnippet(text) {
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const currentVal = textarea.value;
+    textarea.value = currentVal.substring(0, start) + text + currentVal.substring(end);
+    textarea.focus();
+    textarea.selectionStart = textarea.selectionEnd = start + text.length;
+    updateSync();
+  }
+
+  function clearCaption() {
+    if (confirm('ต้องการล้างเนื้อหาแคปชันทั้งหมดใช่หรือไม่?')) {
+      textarea.value = '';
+      updateSync();
+    }
+  }
+
+  // Toast Trigger Helper
+  function showToast(title, message, icon) {
+    const toast = document.getElementById('toastNotification');
+    const toastTitle = document.getElementById('toastTitle');
+    const toastMessage = document.getElementById('toastMessage');
+    const toastIcon = document.getElementById('toastIcon');
+
+    if (toast && toastTitle && toastMessage) {
+      toastTitle.textContent = title;
+      toastMessage.textContent = message;
+      if (toastIcon && icon) toastIcon.textContent = icon;
+      toast.classList.remove('translate-y-8', 'opacity-0', 'pointer-events-none');
+      
+      setTimeout(() => {
+        toast.classList.add('translate-y-8', 'opacity-0', 'pointer-events-none');
+      }, 3500);
+    }
+  }
+
+  function saveDraftToast() {
+    showToast('บันทึกฉบับร่างแล้ว', 'เก็บการแก้ไขล่าสุดไว้ในคลังร่างส่วนตัวของคุณเรียบร้อย', 'bookmark_added');
+  }
+
+  function submitForReview() {
+    const titleVal = titleInput ? titleInput.value.trim() : '';
+    const captionVal = textarea ? textarea.value.trim() : '';
+
+    if (!titleVal || !captionVal) {
+      showToast('กรุณากรอกข้อมูลสำคัญให้ครบ', 'โปรดตรวจสอบหัวข้องานและเนื้อหาแคปชันก่อนส่งตรวจ', 'error');
+      if (!titleVal && titleInput) titleInput.focus();
+      else if (!captionVal && textarea) textarea.focus();
+      return;
+    }
+
+    showToast('ส่งเข้าคิวตรวจสำเร็จ 🚀', 'ระบบได้ส่งแคปชันนี้ให้หัวหน้าทีมเรียบร้อยแล้ว รหัสงาน #CQ-0849', 'task_alt');
+  }
+</script></main><footer class="w-full bg-surface-container-lowest py-space-lg mt-auto shadow-[0_-1px_8px_rgba(0,0,0,0.02)]"><div class="w-full px-gutter-desktop flex flex-col md:flex-row items-center justify-between gap-space-md text-on-surface-variant font-body-sm text-body-sm"><div class="flex items-center gap-space-md"><span>© 2025 CaptionQueue • ระบบตรวจแคปชันโซเชียลมีเดีย FutureSkill &amp; SkillPass</span></div><div class="flex items-center gap-space-lg"><span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-tertiary-container"></span><span>สถานะระบบ: ปกติ (All Services Operational)</span></span><span class="text-outline">|</span><span>Thai Editorial Workflows Engine</span></div></div></footer></body></html>
