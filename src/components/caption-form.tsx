@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useActionState } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,12 +15,33 @@ import {
 } from "@/components/ui/select";
 import { BRANDS, CHANNELS } from "@/lib/types";
 import type { Caption } from "@/lib/types";
+import {
+  saveCaptionDraft,
+  submitCaptionForReview,
+  type CaptionFormState,
+} from "@/lib/actions/captions";
+
+const EMPTY_STATE: CaptionFormState = { errors: {} };
 
 // ฟอร์มเพิ่ม/แก้ไขแคปชัน (PRD 5.2) — ใช้ร่วมกันทั้งหน้าเพิ่มใหม่และหน้าแก้ไข
-// Phase 1: หน้าตาและช่องกรอกครบตาม PRD แต่ปุ่มยังไม่บันทึกข้อมูลจริง (มาทำใน Phase 2)
 export function CaptionForm({ initial }: { initial?: Caption }) {
+  const [, draftAction, isDraftPending] = useActionState(
+    saveCaptionDraft,
+    EMPTY_STATE
+  );
+  const [submitState, submitAction, isSubmitPending] = useActionState(
+    submitCaptionForReview,
+    EMPTY_STATE
+  );
+
+  // แสดงข้อความเตือนของปุ่มที่เพิ่งกดล่าสุดเท่านั้น
+  const errors = submitState.errors;
+  const isPending = isDraftPending || isSubmitPending;
+
   return (
     <form className="flex flex-col gap-space-lg">
+      <input type="hidden" name="id" value={initial?.id ?? ""} />
+
       <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
         <h2 className="text-headline-sm text-on-surface">ข้อมูลทั่วไป</h2>
 
@@ -30,7 +54,11 @@ export function CaptionForm({ initial }: { initial?: Caption }) {
             name="title"
             placeholder="เช่น เปิดตัวคอร์ส AI Data Analyst ลดราคา 50%"
             defaultValue={initial?.title}
+            aria-invalid={Boolean(errors.title)}
           />
+          {errors.title && (
+            <p className="text-body-sm text-error">{errors.title}</p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 gap-space-md sm:grid-cols-2">
@@ -112,26 +140,35 @@ export function CaptionForm({ initial }: { initial?: Caption }) {
           ตัวแคปชัน <span className="text-error">*</span>
         </h2>
         <Textarea
+          id="captionText"
           name="captionText"
           placeholder="พิมพ์แคปชันที่นี่..."
           rows={12}
           defaultValue={initial?.pendingDraftText}
+          aria-invalid={Boolean(errors.captionText)}
           className="text-body-lg"
         />
+        {errors.captionText && (
+          <p className="text-body-sm text-error">{errors.captionText}</p>
+        )}
       </section>
 
       <div className="flex flex-col-reverse items-stretch gap-space-sm sm:flex-row sm:items-center sm:justify-end">
         <Link href="/admin" className={buttonVariants({ variant: "ghost" })}>
           ยกเลิก
         </Link>
-        <Button type="button" variant="secondary">
-          บันทึกไว้ก่อน
+        <Button
+          type="submit"
+          formAction={draftAction}
+          variant="secondary"
+          disabled={isPending}
+        >
+          {isDraftPending ? "กำลังบันทึก..." : "บันทึกไว้ก่อน"}
         </Button>
-        <Button type="button">ส่งตรวจ</Button>
+        <Button type="submit" formAction={submitAction} disabled={isPending}>
+          {isSubmitPending ? "กำลังส่งตรวจ..." : "ส่งตรวจ"}
+        </Button>
       </div>
-      <p className="text-right text-body-sm text-on-surface-variant">
-        ปุ่มด้านบนยังไม่บันทึกข้อมูลจริงใน Phase 1 — จะเริ่มบันทึกจริงใน Phase 2
-      </p>
     </form>
   );
 }

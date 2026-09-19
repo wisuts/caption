@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CaptionForm } from "@/components/caption-form";
-import { getCaptionById } from "@/lib/mock-data";
+import { getCaptionByIdDb } from "@/lib/db/queries";
 
 export default async function EditCaptionPage({
   params,
@@ -9,7 +9,7 @@ export default async function EditCaptionPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const caption = getCaptionById(id);
+  const caption = await getCaptionByIdDb(id);
 
   if (!caption) {
     notFound();

@@ -119,7 +119,7 @@ export default async function ItemDetailPage({
               </div>
               <p className="text-body-sm text-on-surface-variant">
                 เมื่อกดผ่านหรือขอแก้ ชิ้นงานจะบันทึกสถานะและหายจากคิวรอตรวจทันที
-                (ปุ่มนี้ยังไม่ทำงานจริงใน Phase 1)
+                (ปุ่มนี้ยังไม่ทำงานจริง จะเริ่มใช้งานได้ในเฟสถัดไป)
               </p>
             </section>
           )}

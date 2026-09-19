@@ -1,4 +1,5 @@
 import type { Caption } from "@/lib/types";
+export { getLatestSubmittedVersion, hasUnsentEdit } from "@/lib/caption-helpers";
 
 // ข้อมูลตัวอย่างสำหรับ Phase 1 เท่านั้น (ยังไม่ต่อฐานข้อมูลจริง)
 // ตั้งใจให้ครอบคลุมทุกสถานะ และเคสพิเศษที่ PRD พูดถึง:
@@ -179,16 +180,4 @@ export function getArchivedCaptions(): Caption[] {
 
 export function getCaptionById(id: string): Caption | undefined {
   return MOCK_CAPTIONS.find((c) => c.id === id);
-}
-
-/** เวอร์ชันล่าสุดที่ "ส่งตรวจแล้ว" ของชิ้นงาน (ไม่ใช่ข้อความแก้ค้างไว้) */
-export function getLatestSubmittedVersion(caption: Caption) {
-  return caption.versions[caption.versions.length - 1] ?? null;
-}
-
-/** เช็คว่าชิ้นงานนี้มีข้อความแก้ค้างที่ยังไม่ได้ส่งตรวจอยู่หรือไม่ */
-export function hasUnsentEdit(caption: Caption): boolean {
-  const latest = getLatestSubmittedVersion(caption);
-  const latestText = latest?.text ?? "";
-  return caption.pendingDraftText.trim() !== latestText.trim();
 }

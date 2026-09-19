@@ -5,11 +5,8 @@ import { ChannelBadge } from "@/components/channel-badge";
 import { StatusBadge } from "@/components/status-badge";
 import { VersionTimeline } from "@/components/version-timeline";
 import { Button, buttonVariants } from "@/components/ui/button";
-import {
-  getCaptionById,
-  getLatestSubmittedVersion,
-  hasUnsentEdit,
-} from "@/lib/mock-data";
+import { getCaptionByIdDb } from "@/lib/db/queries";
+import { getLatestSubmittedVersion, hasUnsentEdit } from "@/lib/caption-helpers";
 import { formatThaiDate, formatThaiDateTime } from "@/lib/thai-date";
 
 // หน้ารายละเอียดชิ้นงาน ฝั่งเจ้าของ (PRD 5.3) — ต้อง login (จะป้องกันจริงใน Phase 8)
@@ -19,7 +16,7 @@ export default async function AdminItemDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const caption = getCaptionById(id);
+  const caption = await getCaptionByIdDb(id);
 
   if (!caption) {
     notFound();
@@ -142,7 +139,7 @@ export default async function AdminItemDetailPage({
               ลบชิ้นงาน
             </Button>
             <p className="text-body-sm text-on-surface-variant">
-              ปุ่มในกล่องนี้ยังไม่ทำงานจริงใน Phase 1
+              ปุ่มในกล่องนี้ยังไม่ทำงานจริง จะเริ่มใช้งานได้ในเฟสถัดไป
             </p>
           </section>
 
