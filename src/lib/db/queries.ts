@@ -53,3 +53,13 @@ export async function getCaptionByIdDb(id: string): Promise<Caption | undefined>
   if (!row) return undefined;
   return toCaption(row, row.versions);
 }
+
+/** หน้าคิวรอตรวจ (PRD 4.1) — เฉพาะสถานะ "รอตรวจ" เรียงส่งเข้ามาใหม่สุดไว้บนสุด */
+export async function getPendingReviewCaptionsDb(): Promise<Caption[]> {
+  const rows = await db.query.captions.findMany({
+    where: and(eq(captions.isDeleted, false), eq(captions.status, "pending_review")),
+    orderBy: [desc(captions.updatedAt)],
+    with: { versions: true },
+  });
+  return rows.map((row) => toCaption(row, row.versions));
+}

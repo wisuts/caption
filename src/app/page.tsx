@@ -2,11 +2,14 @@ import Link from "next/link";
 import { CaptionRow } from "@/components/caption-row";
 import { EmptyState } from "@/components/empty-state";
 import { buttonVariants } from "@/components/ui/button";
-import { getPendingReviewCaptions } from "@/lib/mock-data";
+import { getPendingReviewCaptionsDb } from "@/lib/db/queries";
 
 // หน้าคิวรอตรวจ (PRD 4.1) — หน้าแรกที่หัวหน้าเปิด ไม่ต้อง login
-export default function ReviewQueuePage() {
-  const items = getPendingReviewCaptions();
+// ต้องดึงข้อมูลสดทุกครั้ง ห้าม cache แบบหน้า static เพราะข้อมูลเปลี่ยนบ่อย
+export const dynamic = "force-dynamic";
+
+export default async function ReviewQueuePage() {
+  const items = await getPendingReviewCaptionsDb();
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-space-lg px-gutter-desktop py-space-xl">

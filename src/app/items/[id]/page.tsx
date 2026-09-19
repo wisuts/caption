@@ -7,17 +7,21 @@ import { VersionTimeline } from "@/components/version-timeline";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { getCaptionById, getLatestSubmittedVersion } from "@/lib/mock-data";
+import { getCaptionByIdDb } from "@/lib/db/queries";
+import { getLatestSubmittedVersion } from "@/lib/caption-helpers";
 import { formatThaiDate, formatThaiDateTime } from "@/lib/thai-date";
 
 // หน้ารายละเอียดชิ้นงาน ฝั่งหัวหน้า/สาธารณะ (PRD 4.2) — ไม่ต้อง login
+// ต้องดึงข้อมูลสดทุกครั้ง ห้าม cache แบบหน้า static เพราะข้อมูลเปลี่ยนบ่อย
+export const dynamic = "force-dynamic";
+
 export default async function ItemDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const caption = getCaptionById(id);
+  const caption = await getCaptionByIdDb(id);
 
   if (!caption) {
     notFound();
