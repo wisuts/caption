@@ -253,3 +253,36 @@ export async function markCaptionPublished(
   revalidatePath("/archive");
   redirect(`/admin/${captionId}`);
 }
+
+export type DeleteState = {
+  error?: string;
+};
+
+/**
+ * "ลบ" (PRD 5.3 / กฎข้อ 7) — ซ่อนออกจากทุกหน้า ไม่ได้ลบแถวออกจากฐานข้อมูลจริง
+ * ทำได้ทุกสถานะ การถามยืนยันทำที่ฝั่ง client ก่อนเรียก action นี้
+ */
+export async function deleteCaption(
+  _prevState: DeleteState,
+  formData: FormData
+): Promise<DeleteState> {
+  const captionId = String(formData.get("captionId") ?? "").trim();
+  if (!captionId) {
+    return { error: "ไม่พบข้อมูลชิ้นงาน กรุณารีเฟรชหน้านี้แล้วลองใหม่" };
+  }
+
+  const updated = await db
+    .update(captions)
+    .set({ isDeleted: true, updatedAt: new Date() })
+    .where(and(eq(captions.id, captionId), eq(captions.isDeleted, false)))
+    .returning({ id: captions.id });
+
+  if (updated.length === 0) {
+    return { error: "ไม่พบชิ้นงานนี้ อาจถูกลบไปแล้ว" };
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/");
+  revalidatePath("/archive");
+  redirect("/admin");
+}

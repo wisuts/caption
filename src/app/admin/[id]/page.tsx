@@ -4,9 +4,10 @@ import { BrandBadge } from "@/components/brand-badge";
 import { ChannelBadge } from "@/components/channel-badge";
 import { StatusBadge } from "@/components/status-badge";
 import { VersionTimeline } from "@/components/version-timeline";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { SubmitNewVersionButton } from "@/components/submit-new-version-button";
 import { MarkPublishedButton } from "@/components/mark-published-button";
+import { DeleteCaptionButton } from "@/components/delete-caption-button";
 import { getCaptionByIdDb } from "@/lib/db/queries";
 import { getLatestSubmittedVersion, hasUnsentEdit } from "@/lib/caption-helpers";
 import { formatThaiDate, formatThaiDateTime } from "@/lib/thai-date";
@@ -135,12 +136,7 @@ export default async function AdminItemDetailPage({
               <SubmitNewVersionButton captionId={caption.id} />
             )}
             {canMarkPublished && <MarkPublishedButton captionId={caption.id} />}
-            <Button variant="destructive" className="w-full">
-              ลบชิ้นงาน
-            </Button>
-            <p className="text-body-sm text-on-surface-variant">
-              ปุ่ม &quot;ลบชิ้นงาน&quot; ยังไม่ทำงานจริง จะเริ่มใช้งานได้ในเฟสถัดไป
-            </p>
+            <DeleteCaptionButton captionId={caption.id} />
           </section>
 
           <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
