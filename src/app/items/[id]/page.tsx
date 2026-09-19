@@ -4,9 +4,7 @@ import { BrandBadge } from "@/components/brand-badge";
 import { ChannelBadge } from "@/components/channel-badge";
 import { StatusBadge } from "@/components/status-badge";
 import { VersionTimeline } from "@/components/version-timeline";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import { ReviewActionPanel } from "@/components/review-action-panel";
 import { getCaptionByIdDb } from "@/lib/db/queries";
 import { getLatestSubmittedVersion } from "@/lib/caption-helpers";
 import { formatThaiDate, formatThaiDateTime } from "@/lib/thai-date";
@@ -101,31 +99,11 @@ export default async function ItemDetailPage({
         </div>
 
         <div className="flex flex-col gap-space-lg lg:col-span-5 xl:col-span-4">
-          {canReview && (
-            <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-md">
-              <h2 className="text-headline-sm text-on-surface">การตรวจพิจารณา</h2>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="review-comment">
-                  คอมเมนต์สำหรับผู้เขียน{" "}
-                  <span className="text-error">* (บังคับถ้ากดขอแก้)</span>
-                </Label>
-                <Textarea
-                  id="review-comment"
-                  placeholder="พิมพ์สิ่งที่ต้องการให้แก้ไข..."
-                  rows={4}
-                />
-              </div>
-              <div className="flex flex-col gap-space-sm sm:flex-row">
-                <Button variant="destructive" className="flex-1">
-                  ขอแก้
-                </Button>
-                <Button className="flex-1">ผ่าน</Button>
-              </div>
-              <p className="text-body-sm text-on-surface-variant">
-                เมื่อกดผ่านหรือขอแก้ ชิ้นงานจะบันทึกสถานะและหายจากคิวรอตรวจทันที
-                (ปุ่มนี้ยังไม่ทำงานจริง จะเริ่มใช้งานได้ในเฟสถัดไป)
-              </p>
-            </section>
+          {canReview && latestVersion && (
+            <ReviewActionPanel
+              captionId={caption.id}
+              versionNumber={latestVersion.versionNumber}
+            />
           )}
 
           <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
