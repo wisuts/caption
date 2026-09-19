@@ -151,7 +151,7 @@ mockup ใน `design-ui/` มีของหลายอย่างที่ P
 - ตัวกรองทำงานจริง ไม่ใช่ mock
 - `npm run lint`, `npm run build` ผ่าน
 
-**Status:** [ ] not started
+**Status:** [x] done
 
 ---
 
