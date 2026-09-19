@@ -40,7 +40,7 @@ mockup ใน `design-ui/` มีของหลายอย่างที่ P
 - `npm run lint` และ `npm run build` ผ่าน
 - ยังไม่แตะฐานข้อมูล ยังไม่ต้อง .env.local
 
-**Status:** [ ] not started
+**Status:** [x] done
 
 ---
 
