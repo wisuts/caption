@@ -134,7 +134,7 @@ mockup ใน `design-ui/` มีของหลายอย่างที่ P
 - ประวัติเวอร์ชันแสดงครบทุกเวอร์ชันเก่าไม่ถูกทับ
 - `npm run lint`, `npm run build` ผ่าน
 
-**Status:** [ ] not started
+**Status:** [x] done
 
 ---
 
