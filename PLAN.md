@@ -167,7 +167,7 @@ mockup ใน `design-ui/` มีของหลายอย่างที่ P
 - การลบเป็นการซ่อน (soft delete) ไม่ลบแถวจริงออกจากฐานข้อมูล ตามกฎ PRD
 - `npm run lint`, `npm run build` ผ่าน
 
-**Status:** [ ] not started
+**Status:** [x] done
 
 ---
 
