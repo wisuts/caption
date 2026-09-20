@@ -3,8 +3,7 @@ import { notFound } from "next/navigation";
 import { BrandBadge } from "@/components/brand-badge";
 import { ChannelBadge } from "@/components/channel-badge";
 import { StatusBadge } from "@/components/status-badge";
-import { VersionTimeline } from "@/components/version-timeline";
-import { VersionCaptionCard } from "@/components/version-caption-card";
+import { CaptionReader } from "@/components/caption-reader";
 import { ReviewWorkspace } from "@/components/review-workspace";
 import { CaptionImage } from "@/components/caption-image";
 import { getCaptionByIdDb } from "@/lib/db/queries";
@@ -31,9 +30,6 @@ export default async function ItemDetailPage({
   }
 
   const latestVersion = getLatestSubmittedVersion(caption);
-  const earlierVersions = latestVersion
-    ? caption.versions.filter((v) => v.versionNumber !== latestVersion.versionNumber)
-    : caption.versions;
   const previousVersion = getPreviousVersion(caption);
   const canReview = caption.status === "pending_review";
 
@@ -90,41 +86,26 @@ export default async function ItemDetailPage({
           />
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-space-lg lg:grid-cols-12">
-          <div className="flex flex-col gap-space-lg lg:col-span-7 xl:col-span-8">
-            <ImageSection imageUrl={caption.imageUrl} />
+        <div className="flex flex-col gap-space-lg">
+          <ImageSection imageUrl={caption.imageUrl} />
 
+          {latestVersion ? (
+            <CaptionReader
+              versionNumber={latestVersion.versionNumber}
+              text={latestVersion.text}
+              versions={caption.versions}
+              previousText={previousVersion?.text}
+            />
+          ) : (
             <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
-              {latestVersion ? (
-                <VersionCaptionCard
-                  version={latestVersion}
-                  headingOverride="แคปชันเวอร์ชันส่งตรวจล่าสุด"
-                />
-              ) : (
-                <>
-                  <h2 className="text-headline-sm text-on-surface">
-                    แคปชันเวอร์ชันส่งตรวจล่าสุด
-                  </h2>
-                  <p className="whitespace-pre-line rounded-lg bg-surface-container-low/40 p-space-lg text-body-lg text-on-surface">
-                    ยังไม่มีเวอร์ชันที่ส่งตรวจ
-                  </p>
-                </>
-              )}
+              <h2 className="text-headline-sm text-on-surface">
+                แคปชันเวอร์ชันส่งตรวจล่าสุด
+              </h2>
+              <p className="whitespace-pre-line rounded-lg bg-surface-container-low/40 p-space-lg text-body-lg text-on-surface">
+                ยังไม่มีเวอร์ชันที่ส่งตรวจ
+              </p>
             </section>
-          </div>
-
-          <div className="flex flex-col gap-space-lg lg:col-span-5 xl:col-span-4">
-            <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
-              <h2 className="text-headline-sm text-on-surface">เวอร์ชันก่อนหน้า</h2>
-              {earlierVersions.length > 0 ? (
-                <VersionTimeline versions={earlierVersions} />
-              ) : (
-                <p className="text-body-sm text-on-surface-variant">
-                  ยังไม่มีเวอร์ชันก่อนหน้า
-                </p>
-              )}
-            </section>
-          </div>
+          )}
         </div>
       )}
     </main>

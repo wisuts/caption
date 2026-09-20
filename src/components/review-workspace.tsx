@@ -3,9 +3,7 @@
 import { useActionState, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { HighlightedCaptionText } from "@/components/highlighted-caption-text";
-import { CaptionDiffView } from "@/components/caption-diff-view";
-import { VersionCaptionCard } from "@/components/version-caption-card";
+import { CaptionTabs } from "@/components/caption-tabs";
 import { VersionTimeline } from "@/components/version-timeline";
 import { orderNotesByPosition } from "@/lib/order-notes-by-position";
 import { getPreviousRoundNotes } from "@/lib/previous-round-status";
@@ -58,15 +56,12 @@ export function ReviewWorkspace({
   const [notes, setNotes] = useState<DraftNote[]>([]);
   const [pendingSelection, setPendingSelection] = useState<string | null>(null);
   const [noteDraft, setNoteDraft] = useState("");
-  const [activeTab, setActiveTab] = useState("latest");
   const textRef = useRef<HTMLDivElement>(null);
 
   const error = changesState.error ?? approveState.error;
   const isPending = isApproving || isRequestingChanges;
 
   function handleMouseUp() {
-    // คลุมข้อความสั่งแก้ได้เฉพาะแท็บเวอร์ชันล่าสุดเท่านั้น แท็บอื่นเป็นการอ่านย้อนหลัง
-    if (activeTab !== "latest") return;
     const selection = window.getSelection();
     const selectedText = selection?.toString().trim();
     // รับเฉพาะข้อความที่หาเจอจริงในแคปชัน กันกรณีลากคลุมคร่อมบรรทัดของเดิมในโหมดเทียบ
@@ -141,63 +136,20 @@ export function ReviewWorkspace({
       })),
   ];
 
-  const earlierVersions = [...versions]
-    .filter((v) => v.versionNumber !== versionNumber)
-    .reverse();
-  const tabs = [
-    { key: "latest", label: `เวอร์ชันล่าสุด (v${versionNumber})` },
-    ...(previousText ? [{ key: "diff", label: "สิ่งที่เปลี่ยนไป" }] : []),
-    ...earlierVersions.map((v) => ({
-      key: `v${v.versionNumber}`,
-      label: `เวอร์ชัน ${v.versionNumber}`,
-    })),
-  ];
-  const activeVersion =
-    earlierVersions.find((v) => `v${v.versionNumber}` === activeTab) ?? null;
-
   return (
     <div className="flex flex-col gap-space-lg">
       <div className="grid grid-cols-1 gap-space-lg lg:grid-cols-12">
       <div className="flex flex-col gap-space-lg lg:col-span-7 xl:col-span-8">
-        <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
-          {/* แท็บสลับดูเนื้อหา — รวมทุกอย่างที่เป็น "การอ่าน" ไว้ในกล่องใหญ่ฝั่งซ้ายที่เดียว */}
-          <div className="flex flex-wrap items-center gap-1.5">
-            {tabs.map((t) => (
-              <button
-                key={t.key}
-                type="button"
-                onClick={() => setActiveTab(t.key)}
-                className={`rounded-lg px-space-sm py-1.5 text-label-md font-medium transition-colors ${
-                  activeTab === t.key
-                    ? "bg-primary text-on-primary"
-                    : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high"
-                }`}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-          <p className="text-label-sm text-on-surface-variant">
-            {activeTab === "latest"
-              ? "ลากคลุมข้อความที่มีปัญหา แล้วพิมพ์โน้ตทางขวาได้เลย"
-              : activeTab === "diff"
-                ? "เขียว = บรรทัดที่แก้มาใหม่ · ขีดฆ่าสีเทา = ของเดิมที่ถูกแทนที่"
-                : "เวอร์ชันเก่า อ่านอย่างเดียว — สลับกลับไปแท็บเวอร์ชันล่าสุดเพื่อคลุมข้อความสั่งแก้"}
-          </p>
-          <div
-            ref={textRef}
-            onMouseUp={handleMouseUp}
-            className="select-text rounded-lg bg-surface-container-low/40 p-space-lg text-body-lg text-on-surface"
-          >
-            {activeTab === "latest" && (
-              <HighlightedCaptionText text={text} marks={marks} />
-            )}
-            {activeTab === "diff" && previousText && (
-              <CaptionDiffView previousText={previousText} currentText={text} />
-            )}
-            {activeVersion && <VersionCaptionCard version={activeVersion} />}
-          </div>
-        </section>
+        <CaptionTabs
+          versionNumber={versionNumber}
+          text={text}
+          versions={versions}
+          previousText={previousText}
+          marks={marks}
+          textRef={textRef}
+          onMouseUp={handleMouseUp}
+          selectable
+        />
       </div>
 
       {/* ติดหน้าจอไว้ทางขวา (เฉพาะจอกว้าง) เหลือเฉพาะเรื่อง "ตรวจงาน" ล้วน ๆ
