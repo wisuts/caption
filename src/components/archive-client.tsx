@@ -10,6 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SortSelect } from "@/components/sort-select";
+import { sortCaptions, type SortOrder } from "@/lib/sort-captions";
 import { BRANDS, CHANNELS, type Brand, type Channel, type Caption } from "@/lib/types";
 
 const ALL = "all" as const;
@@ -19,14 +21,16 @@ const ALL = "all" as const;
 export function ArchiveClient({ allCaptions }: { allCaptions: Caption[] }) {
   const [brand, setBrand] = useState<Brand | typeof ALL>(ALL);
   const [channel, setChannel] = useState<Channel | typeof ALL>(ALL);
+  const [sort, setSort] = useState<SortOrder>("newest");
 
   const items = useMemo(() => {
-    return allCaptions.filter((c) => {
+    const filtered = allCaptions.filter((c) => {
       const matchBrand = brand === ALL || c.brand === brand;
       const matchChannel = channel === ALL || c.channel === channel;
       return matchBrand && matchChannel;
     });
-  }, [allCaptions, brand, channel]);
+    return sortCaptions(filtered, sort);
+  }, [allCaptions, brand, channel, sort]);
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-space-lg px-gutter-desktop py-space-xl">
@@ -75,6 +79,10 @@ export function ArchiveClient({ allCaptions }: { allCaptions: Caption[] }) {
               ))}
             </SelectContent>
           </Select>
+        </FilterField>
+
+        <FilterField label="เรียงลำดับ">
+          <SortSelect value={sort} onChange={setSort} />
         </FilterField>
       </div>
 

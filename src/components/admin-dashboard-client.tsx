@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useMemo, useState, type ReactNode } from "react";
 import { CaptionRow } from "@/components/caption-row";
 import { EmptyState } from "@/components/empty-state";
+import { SortSelect } from "@/components/sort-select";
+import { sortCaptions, type SortOrder } from "@/lib/sort-captions";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { signOutAction } from "@/lib/actions/auth";
@@ -33,6 +35,7 @@ export function AdminDashboardClient({ allCaptions }: { allCaptions: Caption[] }
   const [status, setStatus] = useState<CaptionStatus | typeof ALL>(ALL);
   const [brand, setBrand] = useState<Brand | typeof ALL>(ALL);
   const [channel, setChannel] = useState<Channel | typeof ALL>(ALL);
+  const [sort, setSort] = useState<SortOrder>("newest");
 
   const counts = useMemo(() => {
     const base: Record<CaptionStatus, number> = {
@@ -47,13 +50,14 @@ export function AdminDashboardClient({ allCaptions }: { allCaptions: Caption[] }
   }, [allCaptions]);
 
   const items = useMemo(() => {
-    return allCaptions.filter((c) => {
+    const filtered = allCaptions.filter((c) => {
       const matchStatus = status === ALL || c.status === status;
       const matchBrand = brand === ALL || c.brand === brand;
       const matchChannel = channel === ALL || c.channel === channel;
       return matchStatus && matchBrand && matchChannel;
     });
-  }, [allCaptions, status, brand, channel]);
+    return sortCaptions(filtered, sort);
+  }, [allCaptions, status, brand, channel, sort]);
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-space-lg px-gutter-desktop py-space-xl">
@@ -133,6 +137,10 @@ export function AdminDashboardClient({ allCaptions }: { allCaptions: Caption[] }
               ))}
             </SelectContent>
           </Select>
+        </FilterField>
+
+        <FilterField label="เรียงลำดับ">
+          <SortSelect value={sort} onChange={setSort} />
         </FilterField>
 
         {status !== ALL && (
