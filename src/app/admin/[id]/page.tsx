@@ -9,6 +9,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { SubmitNewVersionButton } from "@/components/submit-new-version-button";
 import { MarkPublishedButton } from "@/components/mark-published-button";
 import { DeleteCaptionButton } from "@/components/delete-caption-button";
+import { CaptionImage } from "@/components/caption-image";
 import { getCaptionByIdDb } from "@/lib/db/queries";
 import { getLatestSubmittedVersion, hasUnsentEdit } from "@/lib/caption-helpers";
 import { formatThaiDate, formatThaiDateTime } from "@/lib/thai-date";
@@ -128,14 +129,7 @@ export default async function AdminItemDetailPage({
           <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
             <h2 className="text-headline-sm text-on-surface">รูปภาพประกอบแคปชัน</h2>
             {caption.imageUrl ? (
-              <a
-                href={caption.imageUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-primary-fixed px-space-md py-2 text-label-md font-medium text-on-primary-fixed hover:bg-primary-fixed-dim"
-              >
-                เปิดดูรูปประกอบ ↗
-              </a>
+              <CaptionImage imageUrl={caption.imageUrl} />
             ) : (
               <p className="text-body-md text-on-surface-variant">ยังไม่ได้ใส่ลิงก์รูป</p>
             )}

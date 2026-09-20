@@ -6,6 +6,7 @@ import { StatusBadge } from "@/components/status-badge";
 import { VersionTimeline } from "@/components/version-timeline";
 import { VersionCaptionCard } from "@/components/version-caption-card";
 import { ReviewWorkspace } from "@/components/review-workspace";
+import { CaptionImage } from "@/components/caption-image";
 import { getCaptionByIdDb } from "@/lib/db/queries";
 import {
   getLatestSubmittedVersion,
@@ -135,14 +136,7 @@ function ImageSection({ imageUrl }: { imageUrl: string | null }) {
     <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
       <h2 className="text-headline-sm text-on-surface">รูปภาพประกอบแคปชัน</h2>
       {imageUrl ? (
-        <a
-          href={imageUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-primary-fixed px-space-md py-2 text-label-md font-medium text-on-primary-fixed hover:bg-primary-fixed-dim"
-        >
-          เปิดดูรูปประกอบ ↗
-        </a>
+        <CaptionImage imageUrl={imageUrl} />
       ) : (
         <p className="text-body-md text-on-surface-variant">ยังไม่ได้ใส่ลิงก์รูป</p>
       )}
