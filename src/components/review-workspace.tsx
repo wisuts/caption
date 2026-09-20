@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { HighlightedCaptionText } from "@/components/highlighted-caption-text";
 import { CaptionDiffView } from "@/components/caption-diff-view";
+import { VersionCaptionCard } from "@/components/version-caption-card";
 import { VersionTimeline } from "@/components/version-timeline";
 import { orderNotesByPosition } from "@/lib/order-notes-by-position";
 import { getPreviousRoundNotes } from "@/lib/previous-round-status";
@@ -57,13 +58,15 @@ export function ReviewWorkspace({
   const [notes, setNotes] = useState<DraftNote[]>([]);
   const [pendingSelection, setPendingSelection] = useState<string | null>(null);
   const [noteDraft, setNoteDraft] = useState("");
-  const [showDiff, setShowDiff] = useState(false);
+  const [activeTab, setActiveTab] = useState("latest");
   const textRef = useRef<HTMLDivElement>(null);
 
   const error = changesState.error ?? approveState.error;
   const isPending = isApproving || isRequestingChanges;
 
   function handleMouseUp() {
+    // คลุมข้อความสั่งแก้ได้เฉพาะแท็บเวอร์ชันล่าสุดเท่านั้น แท็บอื่นเป็นการอ่านย้อนหลัง
+    if (activeTab !== "latest") return;
     const selection = window.getSelection();
     const selectedText = selection?.toString().trim();
     // รับเฉพาะข้อความที่หาเจอจริงในแคปชัน กันกรณีลากคลุมคร่อมบรรทัดของเดิมในโหมดเทียบ
@@ -138,59 +141,79 @@ export function ReviewWorkspace({
       })),
   ];
 
+  const earlierVersions = [...versions]
+    .filter((v) => v.versionNumber !== versionNumber)
+    .reverse();
+  const tabs = [
+    { key: "latest", label: `เวอร์ชันล่าสุด (v${versionNumber})` },
+    ...(previousText ? [{ key: "diff", label: "สิ่งที่เปลี่ยนไป" }] : []),
+    ...earlierVersions.map((v) => ({
+      key: `v${v.versionNumber}`,
+      label: `เวอร์ชัน ${v.versionNumber}`,
+    })),
+  ];
+  const activeVersion =
+    earlierVersions.find((v) => `v${v.versionNumber}` === activeTab) ?? null;
+
   return (
-    <div className="grid grid-cols-1 gap-space-lg lg:grid-cols-12">
+    <div className="flex flex-col gap-space-lg">
+      <div className="grid grid-cols-1 gap-space-lg lg:grid-cols-12">
       <div className="flex flex-col gap-space-lg lg:col-span-7 xl:col-span-8">
         <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
-          <div className="flex flex-wrap items-center justify-between gap-space-xs">
-            <h2 className="text-headline-sm text-on-surface">
-              แคปชันเวอร์ชันส่งตรวจล่าสุด
-            </h2>
-            <div className="flex items-center gap-space-sm">
-              <span className="text-label-sm text-on-surface-variant">
-                {showDiff
-                  ? "เขียว = ที่แก้มาใหม่ · ขีดฆ่า = ของเดิม"
-                  : "ลากคลุมข้อความที่มีปัญหา แล้วพิมพ์โน้ตทางขวาได้เลย"}
-              </span>
-              {previousText && (
-                <Button
-                  type="button"
-                  variant={showDiff ? "default" : "secondary"}
-                  className="h-8 shrink-0 px-2.5 text-label-sm"
-                  onClick={() => setShowDiff((v) => !v)}
-                >
-                  {showDiff ? "ดูข้อความปกติ" : "ดูสิ่งที่เปลี่ยนไป"}
-                </Button>
-              )}
-            </div>
+          {/* แท็บสลับดูเนื้อหา — รวมทุกอย่างที่เป็น "การอ่าน" ไว้ในกล่องใหญ่ฝั่งซ้ายที่เดียว */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            {tabs.map((t) => (
+              <button
+                key={t.key}
+                type="button"
+                onClick={() => setActiveTab(t.key)}
+                className={`rounded-lg px-space-sm py-1.5 text-label-md font-medium transition-colors ${
+                  activeTab === t.key
+                    ? "bg-primary text-on-primary"
+                    : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high"
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
           </div>
+          <p className="text-label-sm text-on-surface-variant">
+            {activeTab === "latest"
+              ? "ลากคลุมข้อความที่มีปัญหา แล้วพิมพ์โน้ตทางขวาได้เลย"
+              : activeTab === "diff"
+                ? "เขียว = บรรทัดที่แก้มาใหม่ · ขีดฆ่าสีเทา = ของเดิมที่ถูกแทนที่"
+                : "เวอร์ชันเก่า อ่านอย่างเดียว — สลับกลับไปแท็บเวอร์ชันล่าสุดเพื่อคลุมข้อความสั่งแก้"}
+          </p>
           <div
             ref={textRef}
             onMouseUp={handleMouseUp}
             className="select-text rounded-lg bg-surface-container-low/40 p-space-lg text-body-lg text-on-surface"
           >
-            {showDiff && previousText ? (
-              <CaptionDiffView previousText={previousText} currentText={text} />
-            ) : (
+            {activeTab === "latest" && (
               <HighlightedCaptionText text={text} marks={marks} />
             )}
+            {activeTab === "diff" && previousText && (
+              <CaptionDiffView previousText={previousText} currentText={text} />
+            )}
+            {activeVersion && <VersionCaptionCard version={activeVersion} />}
           </div>
         </section>
       </div>
 
-      {/* ติดหน้าจอไว้ทางขวา (เฉพาะจอกว้าง) เลื่อนอ่านแคปชันซ้ายได้โดยไม่หลุดจากกล่องตรวจ
-          ความสูงจำกัดเท่าจอ กล่องตรวจอยู่นิ่งเสมอ ส่วนประวัติเวอร์ชันเลื่อนแยกในตัวเองถ้ายาวเกิน */}
-      <div className="flex min-h-0 flex-col gap-space-lg lg:col-span-5 xl:col-span-4 lg:sticky lg:top-20 lg:h-[calc(100vh-6rem)] lg:self-start">
+      {/* ติดหน้าจอไว้ทางขวา (เฉพาะจอกว้าง) เหลือเฉพาะเรื่อง "ตรวจงาน" ล้วน ๆ
+          ส่วนเรื่อง "อ่านเนื้อหา" ย้ายไปอยู่ในแท็บของกล่องใหญ่ฝั่งซ้ายหมดแล้ว
+          กล่องตรวจอยู่นิ่งเสมอ ถ้าเช็กลิสต์ยาวเกินจะเลื่อนแยกในตัวเอง */}
+      <div className="flex min-h-0 flex-col gap-space-lg lg:col-span-5 xl:col-span-4 lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:self-start">
         {previousRound.length > 0 && (
-          <section className="flex shrink-0 flex-col gap-space-sm rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
-            <h2 className="text-headline-sm text-on-surface">
+          <section className="flex min-h-0 flex-col gap-space-sm rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
+            <h2 className="shrink-0 text-headline-sm text-on-surface">
               รอบที่แล้วคุณขอแก้ {previousRound.length} จุด
             </h2>
-            <p className="text-label-sm text-on-surface-variant">
+            <p className="shrink-0 text-label-sm text-on-surface-variant">
               แก้แล้ว {addressedCount} จุด · ยังไม่ได้แก้ {untouched.length} จุด
               {untouched.length > 0 && " (ระบายสีแดงไว้ในแคปชันแล้ว)"}
             </p>
-            <ul className="flex flex-col gap-space-xs">
+            <ul className="flex min-h-0 flex-col gap-space-xs overflow-y-auto">
               {previousRound.map(({ number, note, status }) => (
                 <li key={note.id} className="flex items-start gap-space-xs">
                   <span
@@ -337,15 +360,18 @@ export function ReviewWorkspace({
           </p>
         </section>
 
-        <section className="flex min-h-0 flex-1 flex-col gap-space-md overflow-y-auto rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
-          <h2 className="shrink-0 text-headline-sm text-on-surface">ประวัติเวอร์ชัน</h2>
-          {versions.length > 0 ? (
-            <VersionTimeline versions={versions} />
-          ) : (
-            <p className="text-body-sm text-on-surface-variant">ยังไม่เคยส่งตรวจ</p>
-          )}
-        </section>
       </div>
+      </div>
+
+      {/* ประวัติทั้งหมดเต็มความกว้างด้านล่าง อ่านไล่ทุกเวอร์ชันรวดเดียวได้โดยไม่ถูกบีบในคอลัมน์แคบ */}
+      <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
+        <h2 className="text-headline-sm text-on-surface">ประวัติเวอร์ชันทั้งหมด</h2>
+        {versions.length > 0 ? (
+          <VersionTimeline versions={versions} />
+        ) : (
+          <p className="text-body-sm text-on-surface-variant">ยังไม่เคยส่งตรวจ</p>
+        )}
+      </section>
     </div>
   );
 }
