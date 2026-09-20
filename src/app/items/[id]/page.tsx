@@ -9,7 +9,7 @@ import { ReviewWorkspace } from "@/components/review-workspace";
 import { getCaptionByIdDb } from "@/lib/db/queries";
 import {
   getLatestSubmittedVersion,
-  getPreviousNotedVersion,
+  getPreviousVersion,
 } from "@/lib/caption-helpers";
 import { formatThaiDate, formatThaiDateTime } from "@/lib/thai-date";
 
@@ -33,7 +33,7 @@ export default async function ItemDetailPage({
   const earlierVersions = latestVersion
     ? caption.versions.filter((v) => v.versionNumber !== latestVersion.versionNumber)
     : caption.versions;
-  const previousNotedVersion = getPreviousNotedVersion(caption);
+  const previousVersion = getPreviousVersion(caption);
   const canReview = caption.status === "pending_review";
 
   return (
@@ -81,9 +81,9 @@ export default async function ItemDetailPage({
             versionNumber={latestVersion.versionNumber}
             text={latestVersion.text}
             versions={caption.versions}
-            previousVersionNumber={previousNotedVersion?.versionNumber}
-            previousText={previousNotedVersion?.text}
-            previousNotes={previousNotedVersion?.notes}
+            previousVersionNumber={previousVersion?.versionNumber}
+            previousText={previousVersion?.text}
+            previousNotes={previousVersion?.notes}
           />
 
           <ImageSection imageUrl={caption.imageUrl} />

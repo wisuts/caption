@@ -4,6 +4,7 @@ import { useActionState, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { HighlightedCaptionText } from "@/components/highlighted-caption-text";
+import { CaptionDiffView } from "@/components/caption-diff-view";
 import { VersionTimeline } from "@/components/version-timeline";
 import { orderNotesByPosition } from "@/lib/order-notes-by-position";
 import { getPreviousRoundNotes } from "@/lib/previous-round-status";
@@ -56,6 +57,7 @@ export function ReviewWorkspace({
   const [notes, setNotes] = useState<DraftNote[]>([]);
   const [pendingSelection, setPendingSelection] = useState<string | null>(null);
   const [noteDraft, setNoteDraft] = useState("");
+  const [showDiff, setShowDiff] = useState(false);
   const textRef = useRef<HTMLDivElement>(null);
 
   const error = changesState.error ?? approveState.error;
@@ -64,12 +66,14 @@ export function ReviewWorkspace({
   function handleMouseUp() {
     const selection = window.getSelection();
     const selectedText = selection?.toString().trim();
+    // รับเฉพาะข้อความที่หาเจอจริงในแคปชัน กันกรณีลากคลุมคร่อมบรรทัดของเดิมในโหมดเทียบ
     if (
       selectedText &&
       selectedText.length > 0 &&
       textRef.current &&
       selection &&
-      textRef.current.contains(selection.anchorNode)
+      textRef.current.contains(selection.anchorNode) &&
+      text.replace(/\r\n/g, "\n").includes(selectedText)
     ) {
       setPendingSelection(selectedText);
     }
@@ -138,20 +142,38 @@ export function ReviewWorkspace({
     <div className="grid grid-cols-1 gap-space-lg lg:grid-cols-12">
       <div className="flex flex-col gap-space-lg lg:col-span-7 xl:col-span-8">
         <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-space-xs">
             <h2 className="text-headline-sm text-on-surface">
               แคปชันเวอร์ชันส่งตรวจล่าสุด
             </h2>
-            <span className="text-label-sm text-on-surface-variant">
-              ลากคลุมข้อความที่มีปัญหา แล้วพิมพ์โน้ตทางขวาได้เลย
-            </span>
+            <div className="flex items-center gap-space-sm">
+              <span className="text-label-sm text-on-surface-variant">
+                {showDiff
+                  ? "เขียว = ที่แก้มาใหม่ · ขีดฆ่า = ของเดิม"
+                  : "ลากคลุมข้อความที่มีปัญหา แล้วพิมพ์โน้ตทางขวาได้เลย"}
+              </span>
+              {previousText && (
+                <Button
+                  type="button"
+                  variant={showDiff ? "default" : "secondary"}
+                  className="h-8 shrink-0 px-2.5 text-label-sm"
+                  onClick={() => setShowDiff((v) => !v)}
+                >
+                  {showDiff ? "ดูข้อความปกติ" : "ดูสิ่งที่เปลี่ยนไป"}
+                </Button>
+              )}
+            </div>
           </div>
           <div
             ref={textRef}
             onMouseUp={handleMouseUp}
             className="select-text rounded-lg bg-surface-container-low/40 p-space-lg text-body-lg text-on-surface"
           >
-            <HighlightedCaptionText text={text} marks={marks} />
+            {showDiff && previousText ? (
+              <CaptionDiffView previousText={previousText} currentText={text} />
+            ) : (
+              <HighlightedCaptionText text={text} marks={marks} />
+            )}
           </div>
         </section>
       </div>

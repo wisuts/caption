@@ -6,17 +6,11 @@ export function getLatestSubmittedVersion(caption: Caption) {
 }
 
 /**
- * เวอร์ชันก่อนหน้าที่หัวหน้าเคยเขียนโน้ตสั่งแก้ไว้ ใช้เทียบว่ารอบนี้แก้ตามที่สั่งครบหรือยัง
- * ข้ามเวอร์ชันที่ตรวจผ่านหรือยังไม่มีโน้ต เพราะไม่มีอะไรให้เทียบ
+ * เวอร์ชันก่อนหน้าเวอร์ชันล่าสุด ใช้เทียบว่ารอบนี้เปลี่ยนอะไรไปบ้าง
+ * และแก้ตามที่หัวหน้าสั่งไว้ครบหรือยัง
  */
-export function getPreviousNotedVersion(caption: Caption) {
-  const latest = getLatestSubmittedVersion(caption);
-  if (!latest) return null;
-  for (let i = caption.versions.length - 2; i >= 0; i--) {
-    const version = caption.versions[i];
-    if (version.notes.length > 0) return version;
-  }
-  return null;
+export function getPreviousVersion(caption: Caption) {
+  return caption.versions[caption.versions.length - 2] ?? null;
 }
 
 /** เช็คว่าชิ้นงานนี้มีข้อความแก้ค้างที่ยังไม่ได้ส่งตรวจอยู่หรือไม่ */
