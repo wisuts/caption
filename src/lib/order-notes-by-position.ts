@@ -14,9 +14,13 @@ export function orderNotesByPosition<T extends { quotedText: string | null }>(
   text: string,
   notes: T[]
 ): OrderedNote<T>[] {
+  // ปรับให้ตัดขึ้นบรรทัดใหม่แบบเดียวกันหมดก่อนค้นหา (เหตุผลเดียวกับ highlighted-caption-text.tsx)
+  const normalizedText = text.replace(/\r\n/g, "\n");
   const withPosition = notes.map((note) => ({
     note,
-    pos: note.quotedText ? text.indexOf(note.quotedText) : -1,
+    pos: note.quotedText
+      ? normalizedText.indexOf(note.quotedText.replace(/\r\n/g, "\n"))
+      : -1,
   }));
 
   const pointNotes = withPosition

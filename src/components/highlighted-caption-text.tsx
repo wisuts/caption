@@ -20,17 +20,22 @@ export function HighlightedCaptionText({
   text: string;
   marks: HighlightMark[];
 }) {
-  const cleanMarks = marks.filter((m) => m.quotedText.trim().length > 0);
+  // ปรับให้ตัดขึ้นบรรทัดใหม่แบบเดียวกันหมด (\r\n หรือ \n) ก่อนค้นหา
+  // เพราะข้อความที่ลากคลุมจากเบราว์เซอร์จะได้ \n เสมอ แต่ข้อความที่วางมาจากที่อื่นอาจเป็น \r\n
+  const normalizedText = text.replace(/\r\n/g, "\n");
+  const cleanMarks = marks
+    .map((m) => ({ ...m, quotedText: m.quotedText.replace(/\r\n/g, "\n") }))
+    .filter((m) => m.quotedText.trim().length > 0);
 
   if (cleanMarks.length === 0) {
-    return <span className="whitespace-pre-line">{text}</span>;
+    return <span className="whitespace-pre-line">{normalizedText}</span>;
   }
 
   type Range = { start: number; end: number; index?: number | null };
   const ranges: Range[] = [];
   for (const mark of cleanMarks) {
     const quote = mark.quotedText.trim();
-    const start = text.indexOf(quote);
+    const start = normalizedText.indexOf(quote);
     if (start === -1) continue;
     const end = start + quote.length;
     const overlaps = ranges.some((r) => start < r.end && end > r.start);
@@ -39,7 +44,7 @@ export function HighlightedCaptionText({
   ranges.sort((a, b) => a.start - b.start);
 
   if (ranges.length === 0) {
-    return <span className="whitespace-pre-line">{text}</span>;
+    return <span className="whitespace-pre-line">{normalizedText}</span>;
   }
 
   const segments: (
@@ -49,17 +54,17 @@ export function HighlightedCaptionText({
   let cursor = 0;
   for (const r of ranges) {
     if (r.start > cursor) {
-      segments.push({ text: text.slice(cursor, r.start), highlighted: false });
+      segments.push({ text: normalizedText.slice(cursor, r.start), highlighted: false });
     }
     segments.push({
-      text: text.slice(r.start, r.end),
+      text: normalizedText.slice(r.start, r.end),
       highlighted: true,
       index: r.index,
     });
     cursor = r.end;
   }
-  if (cursor < text.length) {
-    segments.push({ text: text.slice(cursor), highlighted: false });
+  if (cursor < normalizedText.length) {
+    segments.push({ text: normalizedText.slice(cursor), highlighted: false });
   }
 
   return (
