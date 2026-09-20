@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import type { CaptionVersion } from "@/lib/types";
 import { formatThaiDateTime } from "@/lib/thai-date";
 import { HighlightedCaptionText } from "@/components/highlighted-caption-text";
+import { orderNotesByPosition } from "@/lib/order-notes-by-position";
 
 const RESULT_LABEL: Record<CaptionVersion["reviewResult"], string> = {
   pending: "รอตรวจ",
@@ -27,7 +28,10 @@ export function VersionTimeline({ versions }: { versions: CaptionVersion[] }) {
 
   return (
     <div className="relative flex flex-col gap-space-lg pl-6 before:absolute before:top-2 before:bottom-2 before:left-2.5 before:w-0.5 before:bg-surface-container-high">
-      {newestFirst.map((version) => (
+      {newestFirst.map((version) => {
+        const orderedNotes = orderNotesByPosition(version.text, version.notes);
+
+        return (
         <div key={version.versionNumber} className="relative flex flex-col gap-space-xs">
           <span
             className={cn(
@@ -56,9 +60,12 @@ export function VersionTimeline({ versions }: { versions: CaptionVersion[] }) {
           <div className="rounded-lg bg-surface-container-low p-space-md text-body-md text-on-surface">
             <HighlightedCaptionText
               text={version.text}
-              quotes={version.notes
-                .map((n) => n.quotedText)
-                .filter((q): q is string => q !== null)}
+              marks={orderedNotes
+                .filter((n) => n.original.quotedText !== null)
+                .map((n) => ({
+                  quotedText: n.original.quotedText as string,
+                  index: n.index,
+                }))}
             />
           </div>
           {version.notes.length > 0 && (
@@ -70,21 +77,29 @@ export function VersionTimeline({ versions }: { versions: CaptionVersion[] }) {
                 :
               </p>
               <ul className="flex flex-col gap-space-sm">
-                {version.notes.map((n) => (
-                  <li key={n.id} className="flex flex-col gap-1">
-                    {n.quotedText && (
-                      <span className="w-fit rounded bg-amber-200 px-1.5 py-0.5 text-label-sm text-amber-950">
-                        “{n.quotedText}”
+                {orderedNotes.map(({ index, original: n }) => (
+                  <li key={n.id} className="flex items-start gap-space-xs">
+                    {index != null && (
+                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-600 text-[11px] font-bold text-white">
+                        {index}
                       </span>
                     )}
-                    <span className="italic leading-relaxed">{n.note}</span>
+                    <div className="flex flex-col gap-1">
+                      {n.quotedText && (
+                        <span className="w-fit rounded bg-amber-200 px-1.5 py-0.5 text-label-sm text-amber-950">
+                          “{n.quotedText}”
+                        </span>
+                      )}
+                      <span className="italic leading-relaxed">{n.note}</span>
+                    </div>
                   </li>
                 ))}
               </ul>
             </div>
           )}
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

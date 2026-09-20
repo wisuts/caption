@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { HighlightedCaptionText } from "@/components/highlighted-caption-text";
 import { VersionTimeline } from "@/components/version-timeline";
+import { orderNotesByPosition } from "@/lib/order-notes-by-position";
 import type { CaptionVersion } from "@/lib/types";
 import {
   approveCaption,
@@ -86,6 +87,17 @@ export function ReviewWorkspace({
     notes.map((n) => ({ quotedText: n.quotedText, note: n.note }))
   );
 
+  // เลขกำกับตามตำแหน่งที่ปรากฏในข้อความ ให้ตรงกับที่ไฮไลต์ในเนื้อแคปชัน
+  // (รวมจุดที่กำลังลากคลุมค้างไว้ตอนนี้ด้วย เพื่อโชว์เลขล่วงหน้าก่อนกดเพิ่ม)
+  const PENDING_ID = "__pending__";
+  const notesForOrdering = [
+    ...notes.map((n) => ({ id: n.clientId, quotedText: n.quotedText })),
+    ...(pendingSelection ? [{ id: PENDING_ID, quotedText: pendingSelection }] : []),
+  ];
+  const ordered = orderNotesByPosition(text, notesForOrdering);
+  const indexById = new Map(ordered.map((o) => [o.original.id, o.index]));
+  const pendingIndex = indexById.get(PENDING_ID) ?? null;
+
   return (
     <div className="grid grid-cols-1 gap-space-lg lg:grid-cols-12">
       <div className="flex flex-col gap-space-lg lg:col-span-7 xl:col-span-8">
@@ -105,10 +117,12 @@ export function ReviewWorkspace({
           >
             <HighlightedCaptionText
               text={text}
-              quotes={[
-                ...notes.map((n) => n.quotedText),
-                pendingSelection,
-              ].filter((q): q is string => q !== null)}
+              marks={ordered
+                .filter((o) => o.original.quotedText !== null)
+                .map((o) => ({
+                  quotedText: o.original.quotedText as string,
+                  index: o.index,
+                }))}
             />
           </div>
         </section>
@@ -123,7 +137,12 @@ export function ReviewWorkspace({
           <div className="flex flex-col gap-space-sm rounded-lg bg-surface-container-low p-space-md">
             {pendingSelection ? (
               <div className="flex items-start justify-between gap-space-sm">
-                <span className="rounded bg-amber-200 px-1.5 py-0.5 text-label-sm text-amber-950">
+                <span className="inline-flex items-center gap-1 rounded bg-amber-200 px-1.5 py-0.5 text-label-sm text-amber-950">
+                  {pendingIndex != null && (
+                    <span className="flex h-4 w-4 items-center justify-center rounded-full bg-amber-600 text-[10px] font-bold text-white">
+                      {pendingIndex}
+                    </span>
+                  )}
                   จุดที่เลือก: “{pendingSelection}”
                 </span>
                 <button
@@ -158,22 +177,30 @@ export function ReviewWorkspace({
 
           {notes.length > 0 && (
             <ul className="flex flex-col gap-space-xs">
-              {notes.map((n, i) => (
+              {notes.map((n) => (
                 <li
                   key={n.clientId}
                   className="flex items-start justify-between gap-space-sm rounded-lg bg-surface-container-low p-space-sm"
                 >
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-label-sm font-semibold text-on-surface-variant">
-                      โน้ตที่ {i + 1}
-                      {n.quotedText ? "" : " (โน้ตรวม)"}
-                    </span>
-                    {n.quotedText && (
-                      <span className="w-fit rounded bg-amber-200 px-1.5 py-0.5 text-label-sm text-amber-950">
-                        “{n.quotedText}”
+                  <div className="flex items-start gap-space-xs">
+                    {indexById.get(n.clientId) != null && (
+                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-600 text-[11px] font-bold text-white">
+                        {indexById.get(n.clientId)}
                       </span>
                     )}
-                    <span className="text-body-sm text-on-surface">{n.note}</span>
+                    <div className="flex flex-col gap-0.5">
+                      {!n.quotedText && (
+                        <span className="text-label-sm font-semibold text-on-surface-variant">
+                          โน้ตรวม
+                        </span>
+                      )}
+                      {n.quotedText && (
+                        <span className="w-fit rounded bg-amber-200 px-1.5 py-0.5 text-label-sm text-amber-950">
+                          “{n.quotedText}”
+                        </span>
+                      )}
+                      <span className="text-body-sm text-on-surface">{n.note}</span>
+                    </div>
                   </div>
                   <button
                     type="button"
