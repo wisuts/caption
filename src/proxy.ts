@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth/server";
 export default auth.middleware({ loginUrl: "/admin/sign-in" });
 
 export const config = {
-  // จับทุกอย่างใต้ /admin ยกเว้นหน้า sign-in เอง (กันเด้งวนไม่รู้จบ)
-  matcher: ["/admin", "/admin/((?!sign-in).*)"],
+  // จับทุกอย่างใต้ /admin ยกเว้นหน้า sign-in และ setup (กันเด้งวนไม่รู้จบ)
+  // TODO: ลบ "setup" ออกจากส่วนที่ยกเว้นนี้ทันทีหลังลบหน้า /admin/setup ทิ้งแล้ว
+  matcher: ["/admin", "/admin/((?!sign-in|setup).*)"],
 };
