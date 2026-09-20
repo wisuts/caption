@@ -4,6 +4,7 @@ import { BrandBadge } from "@/components/brand-badge";
 import { ChannelBadge } from "@/components/channel-badge";
 import { StatusBadge } from "@/components/status-badge";
 import { VersionTimeline } from "@/components/version-timeline";
+import { VersionCaptionCard } from "@/components/version-caption-card";
 import { buttonVariants } from "@/components/ui/button";
 import { SubmitNewVersionButton } from "@/components/submit-new-version-button";
 import { MarkPublishedButton } from "@/components/mark-published-button";
@@ -26,6 +27,9 @@ export default async function AdminItemDetailPage({
   }
 
   const latestVersion = getLatestSubmittedVersion(caption);
+  const earlierVersions = latestVersion
+    ? caption.versions.filter((v) => v.versionNumber !== latestVersion.versionNumber)
+    : caption.versions;
   const unsentEdit = hasUnsentEdit(caption);
   const canSubmitNewVersion =
     caption.status === "draft" ||
@@ -93,12 +97,21 @@ export default async function AdminItemDetailPage({
       <div className="grid grid-cols-1 gap-space-lg lg:grid-cols-12">
         <div className="flex flex-col gap-space-lg lg:col-span-7 xl:col-span-8">
           <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
-            <h2 className="text-headline-sm text-on-surface">
-              ข้อความที่หัวหน้าเห็นอยู่ตอนนี้ (เวอร์ชันล่าสุดที่ส่งตรวจ)
-            </h2>
-            <p className="whitespace-pre-line rounded-lg bg-surface-container-low/40 p-space-lg text-body-lg text-on-surface">
-              {latestVersion?.text ?? "ยังไม่มีเวอร์ชันที่ส่งตรวจ"}
-            </p>
+            {latestVersion ? (
+              <VersionCaptionCard
+                version={latestVersion}
+                headingOverride="ข้อความที่หัวหน้าเห็นอยู่ตอนนี้ (เวอร์ชันล่าสุดที่ส่งตรวจ)"
+              />
+            ) : (
+              <>
+                <h2 className="text-headline-sm text-on-surface">
+                  ข้อความที่หัวหน้าเห็นอยู่ตอนนี้ (เวอร์ชันล่าสุดที่ส่งตรวจ)
+                </h2>
+                <p className="whitespace-pre-line rounded-lg bg-surface-container-low/40 p-space-lg text-body-lg text-on-surface">
+                  ยังไม่มีเวอร์ชันที่ส่งตรวจ
+                </p>
+              </>
+            )}
           </section>
 
           {unsentEdit && (
@@ -140,11 +153,13 @@ export default async function AdminItemDetailPage({
           </section>
 
           <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
-            <h2 className="text-headline-sm text-on-surface">ประวัติเวอร์ชัน</h2>
-            {caption.versions.length > 0 ? (
-              <VersionTimeline versions={caption.versions} />
+            <h2 className="text-headline-sm text-on-surface">เวอร์ชันก่อนหน้า</h2>
+            {earlierVersions.length > 0 ? (
+              <VersionTimeline versions={earlierVersions} />
             ) : (
-              <p className="text-body-sm text-on-surface-variant">ยังไม่เคยส่งตรวจ</p>
+              <p className="text-body-sm text-on-surface-variant">
+                ยังไม่มีเวอร์ชันก่อนหน้า
+              </p>
             )}
           </section>
         </div>

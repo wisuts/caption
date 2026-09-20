@@ -4,6 +4,7 @@ import { BrandBadge } from "@/components/brand-badge";
 import { ChannelBadge } from "@/components/channel-badge";
 import { StatusBadge } from "@/components/status-badge";
 import { VersionTimeline } from "@/components/version-timeline";
+import { VersionCaptionCard } from "@/components/version-caption-card";
 import { ReviewWorkspace } from "@/components/review-workspace";
 import { getCaptionByIdDb } from "@/lib/db/queries";
 import { getLatestSubmittedVersion } from "@/lib/caption-helpers";
@@ -26,6 +27,9 @@ export default async function ItemDetailPage({
   }
 
   const latestVersion = getLatestSubmittedVersion(caption);
+  const earlierVersions = latestVersion
+    ? caption.versions.filter((v) => v.versionNumber !== latestVersion.versionNumber)
+    : caption.versions;
   const canReview = caption.status === "pending_review";
 
   return (
@@ -81,12 +85,21 @@ export default async function ItemDetailPage({
         <div className="grid grid-cols-1 gap-space-lg lg:grid-cols-12">
           <div className="flex flex-col gap-space-lg lg:col-span-7 xl:col-span-8">
             <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
-              <h2 className="text-headline-sm text-on-surface">
-                แคปชันเวอร์ชันส่งตรวจล่าสุด
-              </h2>
-              <p className="whitespace-pre-line rounded-lg bg-surface-container-low/40 p-space-lg text-body-lg text-on-surface">
-                {latestVersion?.text ?? "ยังไม่มีเวอร์ชันที่ส่งตรวจ"}
-              </p>
+              {latestVersion ? (
+                <VersionCaptionCard
+                  version={latestVersion}
+                  headingOverride="แคปชันเวอร์ชันส่งตรวจล่าสุด"
+                />
+              ) : (
+                <>
+                  <h2 className="text-headline-sm text-on-surface">
+                    แคปชันเวอร์ชันส่งตรวจล่าสุด
+                  </h2>
+                  <p className="whitespace-pre-line rounded-lg bg-surface-container-low/40 p-space-lg text-body-lg text-on-surface">
+                    ยังไม่มีเวอร์ชันที่ส่งตรวจ
+                  </p>
+                </>
+              )}
             </section>
 
             <ImageSection imageUrl={caption.imageUrl} />
@@ -94,12 +107,12 @@ export default async function ItemDetailPage({
 
           <div className="flex flex-col gap-space-lg lg:col-span-5 xl:col-span-4">
             <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
-              <h2 className="text-headline-sm text-on-surface">ประวัติเวอร์ชัน</h2>
-              {caption.versions.length > 0 ? (
-                <VersionTimeline versions={caption.versions} />
+              <h2 className="text-headline-sm text-on-surface">เวอร์ชันก่อนหน้า</h2>
+              {earlierVersions.length > 0 ? (
+                <VersionTimeline versions={earlierVersions} />
               ) : (
                 <p className="text-body-sm text-on-surface-variant">
-                  ยังไม่เคยส่งตรวจ
+                  ยังไม่มีเวอร์ชันก่อนหน้า
                 </p>
               )}
             </section>
