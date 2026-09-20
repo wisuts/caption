@@ -13,8 +13,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CaptionHighlightEditor } from "@/components/caption-highlight-editor";
 import { BRANDS, CHANNELS } from "@/lib/types";
-import type { Caption } from "@/lib/types";
+import type { Caption, ReviewNote } from "@/lib/types";
 import {
   saveCaptionDraft,
   submitCaptionForReview,
@@ -24,7 +25,16 @@ import {
 const EMPTY_STATE: CaptionFormState = { errors: {} };
 
 // ฟอร์มเพิ่ม/แก้ไขแคปชัน (PRD 5.2) — ใช้ร่วมกันทั้งหน้าเพิ่มใหม่และหน้าแก้ไข
-export function CaptionForm({ initial }: { initial?: Caption }) {
+export function CaptionForm({
+  initial,
+  reviewNotes,
+  reviewedText,
+}: {
+  initial?: Caption;
+  /** โน้ตที่หัวหน้าขอให้แก้จากเวอร์ชันล่าสุด — มีเฉพาะตอนเข้ามาแก้ชิ้นงานที่ถูกตรวจแล้ว */
+  reviewNotes?: ReviewNote[];
+  reviewedText?: string;
+}) {
   const [, draftAction, isDraftPending] = useActionState(
     saveCaptionDraft,
     EMPTY_STATE
@@ -139,15 +149,25 @@ export function CaptionForm({ initial }: { initial?: Caption }) {
         <h2 className="text-headline-sm text-on-surface">
           ตัวแคปชัน <span className="text-error">*</span>
         </h2>
-        <Textarea
-          id="captionText"
-          name="captionText"
-          placeholder="พิมพ์แคปชันที่นี่..."
-          rows={12}
-          defaultValue={initial?.pendingDraftText}
-          aria-invalid={Boolean(errors.captionText)}
-          className="text-body-lg"
-        />
+        {reviewNotes && reviewNotes.length > 0 && reviewedText ? (
+          <CaptionHighlightEditor
+            name="captionText"
+            defaultValue={initial?.pendingDraftText ?? ""}
+            reviewedText={reviewedText}
+            notes={reviewNotes}
+            invalid={Boolean(errors.captionText)}
+          />
+        ) : (
+          <Textarea
+            id="captionText"
+            name="captionText"
+            placeholder="พิมพ์แคปชันที่นี่..."
+            rows={12}
+            defaultValue={initial?.pendingDraftText}
+            aria-invalid={Boolean(errors.captionText)}
+            className="text-body-lg"
+          />
+        )}
         {errors.captionText && (
           <p className="text-body-sm text-error">{errors.captionText}</p>
         )}
