@@ -7,7 +7,10 @@ import { VersionTimeline } from "@/components/version-timeline";
 import { VersionCaptionCard } from "@/components/version-caption-card";
 import { ReviewWorkspace } from "@/components/review-workspace";
 import { getCaptionByIdDb } from "@/lib/db/queries";
-import { getLatestSubmittedVersion } from "@/lib/caption-helpers";
+import {
+  getLatestSubmittedVersion,
+  getPreviousNotedVersion,
+} from "@/lib/caption-helpers";
 import { formatThaiDate, formatThaiDateTime } from "@/lib/thai-date";
 
 // หน้ารายละเอียดชิ้นงาน ฝั่งหัวหน้า/สาธารณะ (PRD 4.2) — ไม่ต้อง login
@@ -30,6 +33,7 @@ export default async function ItemDetailPage({
   const earlierVersions = latestVersion
     ? caption.versions.filter((v) => v.versionNumber !== latestVersion.versionNumber)
     : caption.versions;
+  const previousNotedVersion = getPreviousNotedVersion(caption);
   const canReview = caption.status === "pending_review";
 
   return (
@@ -77,6 +81,9 @@ export default async function ItemDetailPage({
             versionNumber={latestVersion.versionNumber}
             text={latestVersion.text}
             versions={caption.versions}
+            previousVersionNumber={previousNotedVersion?.versionNumber}
+            previousText={previousNotedVersion?.text}
+            previousNotes={previousNotedVersion?.notes}
           />
 
           <ImageSection imageUrl={caption.imageUrl} />

@@ -6,7 +6,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { HighlightedCaptionText } from "@/components/highlighted-caption-text";
 import { VersionTimeline } from "@/components/version-timeline";
 import { orderNotesByPosition } from "@/lib/order-notes-by-position";
-import type { CaptionVersion } from "@/lib/types";
+import { getPreviousRoundNotes } from "@/lib/previous-round-status";
+import type { CaptionVersion, ReviewNote } from "@/lib/types";
 import {
   approveCaption,
   requestChanges,
@@ -30,11 +31,18 @@ export function ReviewWorkspace({
   versionNumber,
   text,
   versions,
+  previousVersionNumber,
+  previousText,
+  previousNotes,
 }: {
   captionId: string;
   versionNumber: number;
   text: string;
   versions: CaptionVersion[];
+  /** เวอร์ชันก่อนหน้าที่เคยสั่งแก้ไว้ — ใช้บอกว่ารอบนี้แก้ตามที่สั่งครบหรือยัง */
+  previousVersionNumber?: number;
+  previousText?: string;
+  previousNotes?: ReviewNote[];
 }) {
   const [approveState, approveAction, isApproving] = useActionState(
     approveCaption,
@@ -98,6 +106,34 @@ export function ReviewWorkspace({
   const indexById = new Map(ordered.map((o) => [o.original.id, o.index]));
   const pendingIndex = indexById.get(PENDING_ID) ?? null;
 
+  // เทียบกับรอบที่แล้วว่าสั่งแก้อะไรไว้ และตรงไหนที่ยังไม่ได้แตะเลย
+  const previousRound =
+    previousText && previousNotes && previousNotes.length > 0
+      ? getPreviousRoundNotes(previousText, previousNotes, text)
+      : [];
+  const untouched = previousRound.filter((p) => p.status === "untouched");
+  const addressedCount = previousRound.filter(
+    (p) => p.status === "addressed"
+  ).length;
+
+  // จุดที่สั่งไว้รอบที่แล้วแต่ยังอยู่เหมือนเดิม ระบายสีแดงไว้ให้เห็นทันทีว่าตกหล่น
+  const marks = [
+    ...ordered
+      .filter((o) => o.original.quotedText !== null)
+      .map((o) => ({
+        quotedText: o.original.quotedText as string,
+        index: o.index,
+        tone: "amber" as const,
+      })),
+    ...untouched
+      .filter((p) => p.note.quotedText !== null)
+      .map((p) => ({
+        quotedText: p.note.quotedText as string,
+        index: p.number,
+        tone: "rose" as const,
+      })),
+  ];
+
   return (
     <div className="grid grid-cols-1 gap-space-lg lg:grid-cols-12">
       <div className="flex flex-col gap-space-lg lg:col-span-7 xl:col-span-8">
@@ -115,15 +151,7 @@ export function ReviewWorkspace({
             onMouseUp={handleMouseUp}
             className="select-text rounded-lg bg-surface-container-low/40 p-space-lg text-body-lg text-on-surface"
           >
-            <HighlightedCaptionText
-              text={text}
-              marks={ordered
-                .filter((o) => o.original.quotedText !== null)
-                .map((o) => ({
-                  quotedText: o.original.quotedText as string,
-                  index: o.index,
-                }))}
-            />
+            <HighlightedCaptionText text={text} marks={marks} />
           </div>
         </section>
       </div>
@@ -131,6 +159,50 @@ export function ReviewWorkspace({
       {/* ติดหน้าจอไว้ทางขวา (เฉพาะจอกว้าง) เลื่อนอ่านแคปชันซ้ายได้โดยไม่หลุดจากกล่องตรวจ
           ความสูงจำกัดเท่าจอ กล่องตรวจอยู่นิ่งเสมอ ส่วนประวัติเวอร์ชันเลื่อนแยกในตัวเองถ้ายาวเกิน */}
       <div className="flex min-h-0 flex-col gap-space-lg lg:col-span-5 xl:col-span-4 lg:sticky lg:top-20 lg:h-[calc(100vh-6rem)] lg:self-start">
+        {previousRound.length > 0 && (
+          <section className="flex shrink-0 flex-col gap-space-sm rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
+            <h2 className="text-headline-sm text-on-surface">
+              รอบที่แล้วคุณขอแก้ {previousRound.length} จุด
+            </h2>
+            <p className="text-label-sm text-on-surface-variant">
+              แก้แล้ว {addressedCount} จุด · ยังไม่ได้แก้ {untouched.length} จุด
+              {untouched.length > 0 && " (ระบายสีแดงไว้ในแคปชันแล้ว)"}
+            </p>
+            <ul className="flex flex-col gap-space-xs">
+              {previousRound.map(({ number, note, status }) => (
+                <li key={note.id} className="flex items-start gap-space-xs">
+                  <span
+                    className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white ${
+                      status === "untouched" ? "bg-rose-600" : "bg-tertiary"
+                    }`}
+                  >
+                    {number ?? "•"}
+                  </span>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-body-sm text-on-surface">{note.note}</span>
+                    <span
+                      className={`text-label-sm ${
+                        status === "untouched"
+                          ? "font-semibold text-error"
+                          : "text-on-surface-variant"
+                      }`}
+                    >
+                      {status === "untouched"
+                        ? "ยังไม่ได้แก้ — ข้อความเดิมยังอยู่"
+                        : status === "addressed"
+                          ? "แก้แล้ว"
+                          : "โน้ตรวม — ตรวจเอง"}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <p className="text-label-sm text-on-surface-variant">
+              เทียบกับเวอร์ชัน {previousVersionNumber} ที่คุณตรวจไปรอบก่อน
+            </p>
+          </section>
+        )}
+
         <section className="flex shrink-0 flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-md">
           <h2 className="text-headline-sm text-on-surface">การตรวจพิจารณา</h2>
 

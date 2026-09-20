@@ -5,7 +5,14 @@ export interface HighlightMark {
   quotedText: string;
   /** เลขกำกับที่จะโชว์ติดกับจุดไฮไลต์ — ไม่ใส่ถ้าไม่ต้องการเลข */
   index?: number | null;
+  /** สีของไฮไลต์: เหลือง = จุดของรอบนี้, แดง = จุดที่สั่งไว้รอบที่แล้วแต่ยังไม่ได้แก้ */
+  tone?: "amber" | "rose";
 }
+
+const TONE_STYLE = {
+  amber: { mark: "bg-amber-200", badge: "bg-amber-600" },
+  rose: { mark: "bg-rose-200", badge: "bg-rose-600" },
+} as const;
 
 /**
  * แสดงข้อความแคปชัน โดยไฮไลต์ส่วนที่ตรงกับ "ข้อความที่ลากคลุมไว้" ของแต่ละโน้ต
@@ -31,7 +38,12 @@ export function HighlightedCaptionText({
     return <span className="whitespace-pre-line">{normalizedText}</span>;
   }
 
-  type Range = { start: number; end: number; index?: number | null };
+  type Range = {
+    start: number;
+    end: number;
+    index?: number | null;
+    tone: "amber" | "rose";
+  };
   const ranges: Range[] = [];
   for (const mark of cleanMarks) {
     const quote = mark.quotedText.trim();
@@ -39,7 +51,9 @@ export function HighlightedCaptionText({
     if (start === -1) continue;
     const end = start + quote.length;
     const overlaps = ranges.some((r) => start < r.end && end > r.start);
-    if (!overlaps) ranges.push({ start, end, index: mark.index });
+    if (!overlaps) {
+      ranges.push({ start, end, index: mark.index, tone: mark.tone ?? "amber" });
+    }
   }
   ranges.sort((a, b) => a.start - b.start);
 
@@ -49,7 +63,12 @@ export function HighlightedCaptionText({
 
   const segments: (
     | { text: string; highlighted: false }
-    | { text: string; highlighted: true; index?: number | null }
+    | {
+        text: string;
+        highlighted: true;
+        index?: number | null;
+        tone: "amber" | "rose";
+      }
   )[] = [];
   let cursor = 0;
   for (const r of ranges) {
@@ -60,6 +79,7 @@ export function HighlightedCaptionText({
       text: normalizedText.slice(r.start, r.end),
       highlighted: true,
       index: r.index,
+      tone: r.tone,
     });
     cursor = r.end;
   }
@@ -72,10 +92,14 @@ export function HighlightedCaptionText({
       {segments.map((seg, i) => (
         <Fragment key={i}>
           {seg.highlighted ? (
-            <mark className="rounded bg-amber-200 px-0.5 text-inherit">
+            <mark
+              className={`rounded px-0.5 text-inherit ${TONE_STYLE[seg.tone].mark}`}
+            >
               {seg.text}
               {seg.index != null && (
-                <span className="ml-0.5 inline-flex h-4 w-4 -translate-y-1 items-center justify-center rounded-full bg-amber-600 align-super text-[10px] font-bold text-white">
+                <span
+                  className={`ml-0.5 inline-flex h-4 w-4 -translate-y-1 items-center justify-center rounded-full align-super text-[10px] font-bold text-white ${TONE_STYLE[seg.tone].badge}`}
+                >
                   {seg.index}
                 </span>
               )}
