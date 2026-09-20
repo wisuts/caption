@@ -20,7 +20,7 @@ export function CaptionImage({ imageUrl }: { imageUrl: string }) {
             src={toPreviewImageUrl(imageUrl)}
             alt="รูปประกอบแคปชัน"
             onError={() => setFailed(true)}
-            className="max-h-[28rem] w-auto max-w-full rounded-lg border border-surface-container-high object-contain"
+            className="max-h-96 w-auto max-w-full rounded-lg border border-surface-container-high object-contain"
           />
         </a>
       )}

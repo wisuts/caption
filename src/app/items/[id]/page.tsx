@@ -77,6 +77,8 @@ export default async function ItemDetailPage({
 
       {canReview && latestVersion ? (
         <div className="flex flex-col gap-space-lg">
+          <ImageSection imageUrl={caption.imageUrl} />
+
           <ReviewWorkspace
             captionId={caption.id}
             versionNumber={latestVersion.versionNumber}
@@ -86,12 +88,12 @@ export default async function ItemDetailPage({
             previousText={previousVersion?.text}
             previousNotes={previousVersion?.notes}
           />
-
-          <ImageSection imageUrl={caption.imageUrl} />
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-space-lg lg:grid-cols-12">
           <div className="flex flex-col gap-space-lg lg:col-span-7 xl:col-span-8">
+            <ImageSection imageUrl={caption.imageUrl} />
+
             <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
               {latestVersion ? (
                 <VersionCaptionCard
@@ -109,8 +111,6 @@ export default async function ItemDetailPage({
                 </>
               )}
             </section>
-
-            <ImageSection imageUrl={caption.imageUrl} />
           </div>
 
           <div className="flex flex-col gap-space-lg lg:col-span-5 xl:col-span-4">

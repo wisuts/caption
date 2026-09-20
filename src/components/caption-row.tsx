@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { BrandBadge } from "@/components/brand-badge";
 import { ChannelBadge } from "@/components/channel-badge";
 import { StatusBadge } from "@/components/status-badge";
+import { CaptionThumbnail } from "@/components/caption-thumbnail";
 import type { Caption } from "@/lib/types";
 import { formatThaiDate, formatThaiDateTime } from "@/lib/thai-date";
 import { getLatestSubmittedVersion } from "@/lib/caption-helpers";
@@ -21,7 +22,9 @@ export function CaptionRow({
 
   return (
     <div className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm transition-shadow hover:shadow-md sm:flex-row sm:items-center">
-      <Link href={href} className="flex min-w-0 flex-1 flex-col gap-space-xs">
+      <Link href={href} className="flex min-w-0 flex-1 items-start gap-space-md">
+        <CaptionThumbnail imageUrl={caption.imageUrl} />
+        <div className="flex min-w-0 flex-1 flex-col gap-space-xs">
         <div className="flex flex-wrap items-center gap-space-xs">
           <BrandBadge brand={caption.brand} />
           <ChannelBadge channel={caption.channel} />
@@ -44,6 +47,7 @@ export function CaptionRow({
           {latestVersion && (
             <span>ส่งตรวจล่าสุด: {formatThaiDateTime(latestVersion.submittedAt)}</span>
           )}
+        </div>
         </div>
       </Link>
       {action && <div className="shrink-0">{action}</div>}

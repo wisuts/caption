@@ -98,6 +98,15 @@ export default async function AdminItemDetailPage({
       <div className="grid grid-cols-1 gap-space-lg lg:grid-cols-12">
         <div className="flex flex-col gap-space-lg lg:col-span-7 xl:col-span-8">
           <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
+            <h2 className="text-headline-sm text-on-surface">รูปภาพประกอบแคปชัน</h2>
+            {caption.imageUrl ? (
+              <CaptionImage imageUrl={caption.imageUrl} />
+            ) : (
+              <p className="text-body-md text-on-surface-variant">ยังไม่ได้ใส่ลิงก์รูป</p>
+            )}
+          </section>
+
+          <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
             {latestVersion ? (
               <VersionCaptionCard
                 version={latestVersion}
@@ -125,15 +134,6 @@ export default async function AdminItemDetailPage({
               </p>
             </section>
           )}
-
-          <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
-            <h2 className="text-headline-sm text-on-surface">รูปภาพประกอบแคปชัน</h2>
-            {caption.imageUrl ? (
-              <CaptionImage imageUrl={caption.imageUrl} />
-            ) : (
-              <p className="text-body-md text-on-surface-variant">ยังไม่ได้ใส่ลิงก์รูป</p>
-            )}
-          </section>
         </div>
 
         <div className="flex flex-col gap-space-lg lg:col-span-5 xl:col-span-4">
