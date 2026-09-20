@@ -66,15 +66,20 @@ export default async function ItemDetailPage({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-space-lg lg:grid-cols-12">
-        <div className="flex flex-col gap-space-lg lg:col-span-7 xl:col-span-8">
-          {canReview && latestVersion ? (
-            <ReviewWorkspace
-              captionId={caption.id}
-              versionNumber={latestVersion.versionNumber}
-              text={latestVersion.text}
-            />
-          ) : (
+      {canReview && latestVersion ? (
+        <div className="flex flex-col gap-space-lg">
+          <ReviewWorkspace
+            captionId={caption.id}
+            versionNumber={latestVersion.versionNumber}
+            text={latestVersion.text}
+            versions={caption.versions}
+          />
+
+          <ImageSection imageUrl={caption.imageUrl} />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-space-lg lg:grid-cols-12">
+          <div className="flex flex-col gap-space-lg lg:col-span-7 xl:col-span-8">
             <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
               <h2 className="text-headline-sm text-on-surface">
                 แคปชันเวอร์ชันส่งตรวจล่าสุด
@@ -83,43 +88,45 @@ export default async function ItemDetailPage({
                 {latestVersion?.text ?? "ยังไม่มีเวอร์ชันที่ส่งตรวจ"}
               </p>
             </section>
-          )}
 
-          <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
-            <h2 className="text-headline-sm text-on-surface">
-              รูปภาพประกอบแคปชัน
-            </h2>
-            {caption.imageUrl ? (
-              <a
-                href={caption.imageUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-primary-fixed px-space-md py-2 text-label-md font-medium text-on-primary-fixed hover:bg-primary-fixed-dim"
-              >
-                เปิดดูรูปประกอบ ↗
-              </a>
-            ) : (
-              <p className="text-body-md text-on-surface-variant">
-                ยังไม่ได้ใส่ลิงก์รูป
-              </p>
-            )}
-          </section>
-        </div>
+            <ImageSection imageUrl={caption.imageUrl} />
+          </div>
 
-        <div className="flex flex-col gap-space-lg lg:col-span-5 xl:col-span-4">
-          <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
-            <h2 className="text-headline-sm text-on-surface">ประวัติเวอร์ชัน</h2>
-            {caption.versions.length > 0 ? (
-              <VersionTimeline versions={caption.versions} />
-            ) : (
-              <p className="text-body-sm text-on-surface-variant">
-                ยังไม่เคยส่งตรวจ
-              </p>
-            )}
-          </section>
+          <div className="flex flex-col gap-space-lg lg:col-span-5 xl:col-span-4">
+            <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
+              <h2 className="text-headline-sm text-on-surface">ประวัติเวอร์ชัน</h2>
+              {caption.versions.length > 0 ? (
+                <VersionTimeline versions={caption.versions} />
+              ) : (
+                <p className="text-body-sm text-on-surface-variant">
+                  ยังไม่เคยส่งตรวจ
+                </p>
+              )}
+            </section>
+          </div>
         </div>
-      </div>
+      )}
     </main>
+  );
+}
+
+function ImageSection({ imageUrl }: { imageUrl: string | null }) {
+  return (
+    <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
+      <h2 className="text-headline-sm text-on-surface">รูปภาพประกอบแคปชัน</h2>
+      {imageUrl ? (
+        <a
+          href={imageUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-primary-fixed px-space-md py-2 text-label-md font-medium text-on-primary-fixed hover:bg-primary-fixed-dim"
+        >
+          เปิดดูรูปประกอบ ↗
+        </a>
+      ) : (
+        <p className="text-body-md text-on-surface-variant">ยังไม่ได้ใส่ลิงก์รูป</p>
+      )}
+    </section>
   );
 }
 
