@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import type { CaptionVersion } from "@/lib/types";
 import { formatThaiDateTime } from "@/lib/thai-date";
+import { HighlightedCaptionText } from "@/components/highlighted-caption-text";
 
 const RESULT_LABEL: Record<CaptionVersion["reviewResult"], string> = {
   pending: "รอตรวจ",
@@ -52,18 +53,34 @@ export function VersionTimeline({ versions }: { versions: CaptionVersion[] }) {
               ส่งตรวจ {formatThaiDateTime(version.submittedAt)}
             </span>
           </div>
-          <p className="whitespace-pre-line rounded-lg bg-surface-container-low p-space-md text-body-md text-on-surface">
-            {version.text}
-          </p>
-          {version.reviewComment && (
-            <div className="rounded-lg bg-error-container/40 p-space-md text-body-sm text-on-surface">
-              <p className="mb-1 font-semibold text-on-error-container">
-                คอมเมนต์จากหัวหน้า
+          <div className="rounded-lg bg-surface-container-low p-space-md text-body-md text-on-surface">
+            <HighlightedCaptionText
+              text={version.text}
+              quotes={version.notes
+                .map((n) => n.quotedText)
+                .filter((q): q is string => q !== null)}
+            />
+          </div>
+          {version.notes.length > 0 && (
+            <div className="flex flex-col gap-space-sm rounded-lg bg-error-container/40 p-space-md text-body-sm text-on-surface">
+              <p className="font-semibold text-on-error-container">
+                โน้ตจากหัวหน้า
                 {version.reviewedAt &&
                   ` (${formatThaiDateTime(version.reviewedAt)})`}
                 :
               </p>
-              <p className="italic leading-relaxed">{version.reviewComment}</p>
+              <ul className="flex flex-col gap-space-sm">
+                {version.notes.map((n) => (
+                  <li key={n.id} className="flex flex-col gap-1">
+                    {n.quotedText && (
+                      <span className="w-fit rounded bg-amber-200 px-1.5 py-0.5 text-label-sm text-amber-950">
+                        “{n.quotedText}”
+                      </span>
+                    )}
+                    <span className="italic leading-relaxed">{n.note}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
         </div>

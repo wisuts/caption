@@ -1,23 +1,40 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { captions, captionVersions } from "@/lib/db/schema";
-import type { Caption, CaptionVersion } from "@/lib/types";
+import { captions, captionVersions, reviewNotes } from "@/lib/db/schema";
+import type { Caption, CaptionVersion, ReviewNote } from "@/lib/types";
 
 type CaptionRow = typeof captions.$inferSelect;
-type CaptionVersionRow = typeof captionVersions.$inferSelect;
+type ReviewNoteRow = typeof reviewNotes.$inferSelect;
+type CaptionVersionRow = typeof captionVersions.$inferSelect & {
+  notes: ReviewNoteRow[];
+};
+
+const versionsWithNotes = { with: { notes: true } } as const;
 
 function toCaption(row: CaptionRow, versionRows: CaptionVersionRow[]): Caption {
   const versions: CaptionVersion[] = versionRows
     .slice()
     .sort((a, b) => a.versionNumber - b.versionNumber)
-    .map((v) => ({
-      versionNumber: v.versionNumber,
-      text: v.text,
-      submittedAt: v.submittedAt.toISOString(),
-      reviewResult: v.reviewResult,
-      reviewComment: v.reviewComment,
-      reviewedAt: v.reviewedAt ? v.reviewedAt.toISOString() : null,
-    }));
+    .map((v) => {
+      const notes: ReviewNote[] = v.notes
+        .slice()
+        .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+        .map((n) => ({
+          id: n.id,
+          quotedText: n.quotedText,
+          note: n.note,
+          createdAt: n.createdAt.toISOString(),
+        }));
+
+      return {
+        versionNumber: v.versionNumber,
+        text: v.text,
+        submittedAt: v.submittedAt.toISOString(),
+        reviewResult: v.reviewResult,
+        notes,
+        reviewedAt: v.reviewedAt ? v.reviewedAt.toISOString() : null,
+      };
+    });
 
   return {
     id: row.id,
@@ -40,7 +57,7 @@ export async function getAllCaptionsDb(): Promise<Caption[]> {
   const rows = await db.query.captions.findMany({
     where: eq(captions.isDeleted, false),
     orderBy: [desc(captions.updatedAt)],
-    with: { versions: true },
+    with: { versions: versionsWithNotes },
   });
   return rows.map((row) => toCaption(row, row.versions));
 }
@@ -48,7 +65,7 @@ export async function getAllCaptionsDb(): Promise<Caption[]> {
 export async function getCaptionByIdDb(id: string): Promise<Caption | undefined> {
   const row = await db.query.captions.findFirst({
     where: and(eq(captions.id, id), eq(captions.isDeleted, false)),
-    with: { versions: true },
+    with: { versions: versionsWithNotes },
   });
   if (!row) return undefined;
   return toCaption(row, row.versions);
@@ -59,7 +76,7 @@ export async function getPendingReviewCaptionsDb(): Promise<Caption[]> {
   const rows = await db.query.captions.findMany({
     where: and(eq(captions.isDeleted, false), eq(captions.status, "pending_review")),
     orderBy: [desc(captions.updatedAt)],
-    with: { versions: true },
+    with: { versions: versionsWithNotes },
   });
   return rows.map((row) => toCaption(row, row.versions));
 }
@@ -72,7 +89,7 @@ export async function getArchivedCaptionsDb(): Promise<Caption[]> {
       inArray(captions.status, ["approved", "published"])
     ),
     orderBy: [desc(captions.updatedAt)],
-    with: { versions: true },
+    with: { versions: versionsWithNotes },
   });
   return rows.map((row) => toCaption(row, row.versions));
 }

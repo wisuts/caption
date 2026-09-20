@@ -70,9 +70,26 @@ export const captionVersions = pgTable("caption_versions", {
     .notNull()
     .defaultNow(),
   reviewResult: reviewResultEnum("review_result").notNull().default("pending"),
-  reviewComment: text("review_comment"),
   // ไม่เก็บชื่อคนตรวจ ตาม PRD หัวข้อ 6
   reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+});
+
+/**
+ * ตาราง review_notes — โน้ตของหัวหน้าตอนตรวจ ผูกกับเวอร์ชันหนึ่ง ๆ ได้หลายอัน
+ * แต่ละอันชี้เฉพาะจุด (มี quotedText = ข้อความที่ลากคลุมไว้) หรือเป็นโน้ตรวม
+ * (quotedText เป็นค่าว่าง) ก็ได้
+ */
+export const reviewNotes = pgTable("review_notes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  versionId: uuid("version_id")
+    .notNull()
+    .references(() => captionVersions.id, { onDelete: "cascade" }),
+  // ข้อความที่หัวหน้าลากคลุมไว้ในแคปชัน — ว่างได้ถ้าเป็นโน้ตรวม ไม่ชี้เฉพาะจุด
+  quotedText: text("quoted_text"),
+  note: text("note").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
 });
 
 export const captionsRelations = relations(captions, ({ many }) => ({
@@ -81,10 +98,18 @@ export const captionsRelations = relations(captions, ({ many }) => ({
 
 export const captionVersionsRelations = relations(
   captionVersions,
-  ({ one }) => ({
+  ({ one, many }) => ({
     caption: one(captions, {
       fields: [captionVersions.captionId],
       references: [captions.id],
     }),
+    notes: many(reviewNotes),
   })
 );
+
+export const reviewNotesRelations = relations(reviewNotes, ({ one }) => ({
+  version: one(captionVersions, {
+    fields: [reviewNotes.versionId],
+    references: [captionVersions.id],
+  }),
+}));

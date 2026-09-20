@@ -21,6 +21,17 @@ export type CaptionStatus = (typeof CAPTION_STATUSES)[number];
 /** ผลการตรวจของแต่ละเวอร์ชัน */
 export type ReviewResult = "pending" | "approved" | "changes_requested";
 
+/**
+ * โน้ตของหัวหน้าตอนตรวจ 1 เวอร์ชันมีได้หลายอัน
+ * quotedText มีค่าถ้าเป็นโน้ตที่ชี้เฉพาะจุด (ลากคลุมข้อความไว้) ไม่มีค่าถ้าเป็นโน้ตรวม
+ */
+export interface ReviewNote {
+  id: string;
+  quotedText: string | null;
+  note: string;
+  createdAt: string;
+}
+
 export interface CaptionVersion {
   /** เลขเวอร์ชัน เริ่มที่ 1 */
   versionNumber: number;
@@ -30,8 +41,8 @@ export interface CaptionVersion {
   submittedAt: string;
   /** ผลการตรวจของเวอร์ชันนี้ */
   reviewResult: ReviewResult;
-  /** คอมเมนต์ของคนตรวจ (มีได้ 1 อันต่อเวอร์ชัน) */
-  reviewComment: string | null;
+  /** โน้ตของคนตรวจ (มีได้หลายอันต่อเวอร์ชัน) */
+  notes: ReviewNote[];
   /** วันเวลาที่ตรวจ (ISO string) — ไม่มีถ้ายังไม่ตรวจ */
   reviewedAt: string | null;
 }
