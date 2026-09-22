@@ -6,6 +6,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { captions, captionVersions } from "@/lib/db/schema";
 import { BRANDS, CHANNELS, type Brand, type Channel } from "@/lib/types";
+import { joinImageUrls, parseImageUrls } from "@/lib/image-url";
 
 export type CaptionFormState = {
   errors: Partial<Record<"title" | "brand" | "channel" | "captionText", string>>;
@@ -18,7 +19,10 @@ function readCommonFields(formData: FormData) {
   const channelRaw = String(formData.get("channel") ?? "");
   const scheduledDateRaw = String(formData.get("scheduledDate") ?? "").trim();
   const authorName = String(formData.get("authorName") ?? "").trim();
-  const imageUrlRaw = String(formData.get("imageUrl") ?? "").trim();
+  // ลิงก์รูปมาเป็นก้อนเดียวคั่นด้วยบรรทัด — ล้างบรรทัดว่างและช่องว่างส่วนเกินทิ้งก่อนเก็บ
+  const imageUrls = joinImageUrls(
+    parseImageUrls(String(formData.get("imageUrl") ?? ""))
+  );
   const captionText = String(formData.get("captionText") ?? "").trim();
 
   const brand: Brand = BRANDS.includes(brandRaw as Brand)
@@ -35,7 +39,7 @@ function readCommonFields(formData: FormData) {
     channel,
     scheduledDate: scheduledDateRaw || null,
     authorName,
-    imageUrl: imageUrlRaw || null,
+    imageUrl: imageUrls || null,
     captionText,
   };
 }

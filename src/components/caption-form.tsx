@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CaptionHighlightEditor } from "@/components/caption-highlight-editor";
+import { ImageUrlFields } from "@/components/image-url-fields";
 import { BRANDS, CHANNELS } from "@/lib/types";
 import type { Caption, ReviewNote } from "@/lib/types";
 import {
@@ -134,14 +135,8 @@ export function CaptionForm({
       <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
         <h2 className="text-headline-sm text-on-surface">รูปภาพประกอบ (เว้นว่างได้)</h2>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="imageUrl">ลิงก์รูปประกอบ</Label>
-          <Input
-            id="imageUrl"
-            name="imageUrl"
-            type="url"
-            placeholder="https://drive.google.com/..."
-            defaultValue={initial?.imageUrl ?? ""}
-          />
+          <Label>ลิงก์รูปประกอบ (ใส่ได้หลายรูป)</Label>
+          <ImageUrlFields name="imageUrl" defaultValue={initial?.imageUrl ?? null} />
         </div>
       </section>
 

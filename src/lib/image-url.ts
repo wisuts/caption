@@ -15,3 +15,19 @@ export function toPreviewImageUrl(url: string): string {
   }
   return url;
 }
+
+/**
+ * ใส่รูปได้หลายใบต่อแคปชัน 1 ชิ้น เก็บรวมไว้ในช่องเดิมโดยคั่นด้วยการขึ้นบรรทัดใหม่
+ * (ไม่ต้องแก้โครงฐานข้อมูล งานเก่าที่มีลิงก์เดียวจึงอ่านได้เหมือนเดิมทุกประการ)
+ */
+export function parseImageUrls(value: string | null): string[] {
+  if (!value) return [];
+  return value
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+}
+
+export function joinImageUrls(urls: string[]): string {
+  return urls.map((u) => u.trim()).filter((u) => u.length > 0).join("\n");
+}
