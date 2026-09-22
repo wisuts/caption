@@ -234,10 +234,10 @@ export function ReviewWorkspace({
               placeholder="พิมพ์สิ่งที่ต้องการให้แก้ไขตรงจุดนี้..."
               rows={2}
             />
+            {/* ใช้สีเขียวของธีมให้ปุ่มนี้เด่น เพราะอยากให้คนตรวจเพิ่มโน้ตให้ครบก่อนกดส่ง */}
             <Button
               type="button"
-              variant="secondary"
-              className="w-fit"
+              className="w-fit bg-tertiary text-on-tertiary hover:bg-tertiary/85"
               onClick={addNote}
               disabled={!noteDraft.trim()}
             >
@@ -289,9 +289,9 @@ export function ReviewWorkspace({
           {/* บอกให้ชัดตั้งแต่ก่อนกดว่า "ส่งแล้วจบรอบ" ไม่ใช่การสั่งแก้ทีละจุด
               แล้วยังมีขั้นยืนยันอีกชั้นกันกดพลาด (PRD 4.2) */}
           <p className="rounded-lg bg-surface-container-low p-space-sm text-body-sm text-on-surface-variant">
-            ตรวจรอบนี้<strong className="text-on-surface"> ส่งได้ครั้งเดียว</strong> —
-            อ่านให้ครบและเพิ่มโน้ตให้หมดก่อนกดส่ง หลังส่งแล้วจะเพิ่มโน้ตอีกไม่ได้
-            จนกว่าเจ้าของจะส่งเวอร์ชันใหม่มา
+            <strong className="text-on-surface">เพิ่มโน้ตได้หลายจุด</strong>{" "}
+            แต่<strong className="text-on-surface">กดส่งได้ครั้งเดียว</strong> —
+            กดส่งแล้วจะเพิ่มโน้ตอีกไม่ได้ จนกว่าจะมีเวอร์ชันใหม่
           </p>
 
           {confirming === null && (
