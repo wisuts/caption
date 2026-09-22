@@ -52,7 +52,7 @@ export function AdminDashboardClient({ allCaptions }: { allCaptions: Caption[] }
   const items = useMemo(() => {
     const filtered = allCaptions.filter((c) => {
       const matchStatus = status === ALL || c.status === status;
-      const matchBrand = brand === ALL || c.brand === brand;
+      const matchBrand = brand === ALL || c.brands.includes(brand);
       const matchChannel = channel === ALL || c.channel === channel;
       return matchStatus && matchBrand && matchChannel;
     });

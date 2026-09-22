@@ -5,7 +5,8 @@ import { redirect } from "next/navigation";
 import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { captions, captionVersions } from "@/lib/db/schema";
-import { BRANDS, CHANNELS, type Brand, type Channel } from "@/lib/types";
+import { CHANNELS, type Channel } from "@/lib/types";
+import { joinBrands, parseBrands } from "@/lib/brands";
 import { joinImageUrls, parseImageUrls } from "@/lib/image-url";
 
 export type CaptionFormState = {
@@ -25,9 +26,8 @@ function readCommonFields(formData: FormData) {
   );
   const captionText = String(formData.get("captionText") ?? "").trim();
 
-  const brand: Brand = BRANDS.includes(brandRaw as Brand)
-    ? (brandRaw as Brand)
-    : BRANDS[0];
+  // เลือกได้หลายแบรนด์ — รับมาเป็นก้อนเดียวคั่นบรรทัด แล้วกรองเหลือเฉพาะชื่อที่มีจริง
+  const brand = joinBrands(parseBrands(brandRaw));
   const channel: Channel = CHANNELS.includes(channelRaw as Channel)
     ? (channelRaw as Channel)
     : CHANNELS[0];
@@ -99,6 +99,7 @@ export async function submitCaptionForReview(
 
   const errors: CaptionFormState["errors"] = {};
   if (!fields.title) errors.title = "กรุณากรอกหัวข้อสั้น";
+  if (!fields.brand) errors.brand = "กรุณาเลือกแบรนด์อย่างน้อย 1 อัน";
   if (!fields.captionText) errors.captionText = "กรุณาพิมพ์ตัวแคปชัน";
   if (Object.keys(errors).length > 0) {
     return { errors };

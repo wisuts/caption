@@ -2,6 +2,7 @@ import { and, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { captions, captionVersions, reviewNotes } from "@/lib/db/schema";
 import type { Caption, CaptionVersion, ReviewNote } from "@/lib/types";
+import { parseBrands } from "@/lib/brands";
 
 type CaptionRow = typeof captions.$inferSelect;
 type ReviewNoteRow = typeof reviewNotes.$inferSelect;
@@ -39,7 +40,7 @@ function toCaption(row: CaptionRow, versionRows: CaptionVersionRow[]): Caption {
   return {
     id: row.id,
     title: row.title,
-    brand: row.brand,
+    brands: parseBrands(row.brand),
     channel: row.channel,
     scheduledDate: row.scheduledDate,
     authorName: row.authorName,

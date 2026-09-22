@@ -1,7 +1,15 @@
 // ชนิดข้อมูลหลักของระบบคิวตรวจแคปชัน ตาม PRD.md หัวข้อ 6
 
-/** รายชื่อแบรนด์ตายตัว (PRD หัวข้อ 8) */
-export const BRANDS = ["FutureSkill", "SkillPass"] as const;
+/** รายชื่อแบรนด์ตายตัว (PRD หัวข้อ 8) — 1 ชิ้นงานเลือกได้หลายแบรนด์ */
+export const BRANDS = [
+  "FutureSkill",
+  "SkillPass",
+  "Creator & Marketing",
+  "Self Growth",
+  "AI Automation Tech",
+  "Data",
+  "Business Leader",
+] as const;
 export type Brand = (typeof BRANDS)[number];
 
 /** รายชื่อช่องทางตายตัว (PRD หัวข้อ 8) */
@@ -51,7 +59,8 @@ export interface Caption {
   id: string;
   /** หัวข้อสั้น ๆ */
   title: string;
-  brand: Brand;
+  /** เลือกได้หลายแบรนด์ต่อ 1 ชิ้นงาน */
+  brands: Brand[];
   channel: Channel;
   /** กำหนดลง — ไม่บังคับ */
   scheduledDate: string | null;

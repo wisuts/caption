@@ -12,7 +12,6 @@ import { relations } from "drizzle-orm";
 
 // รายชื่อแบรนด์และช่องทางตายตัว (PRD หัวข้อ 8) — เก็บเป็น enum ในโค้ด
 // ไม่ใช่ตารางแยก เพราะยังไม่มีความจำเป็นต้องแก้ผ่านหน้าเว็บ
-export const brandEnum = pgEnum("brand", ["FutureSkill", "SkillPass"]);
 export const channelEnum = pgEnum("channel", ["Facebook"]);
 
 // ชุดสถานะของชิ้นงาน (PRD หัวข้อ 8): ร่าง → รอตรวจ → ขอแก้ → ผ่าน → ลงแล้ว
@@ -37,7 +36,9 @@ export const reviewResultEnum = pgEnum("review_result", [
 export const captions = pgTable("captions", {
   id: uuid("id").primaryKey().defaultRandom(),
   title: text("title").notNull(),
-  brand: brandEnum("brand").notNull(),
+  // เลือกได้หลายแบรนด์ เก็บเป็นข้อความคั่นด้วยการขึ้นบรรทัดใหม่ (แบบเดียวกับลิงก์รูป)
+  // รายชื่อแบรนด์ที่เลือกได้คุมด้วย BRANDS ในโค้ด ไม่ต้องแก้ฐานข้อมูลเวลาเพิ่มแบรนด์
+  brand: text("brand").notNull().default(""),
   channel: channelEnum("channel").notNull(),
   scheduledDate: date("scheduled_date"),
   authorName: text("author_name").notNull().default(""),

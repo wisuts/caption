@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { BrandBadge } from "@/components/brand-badge";
+import { BrandBadges } from "@/components/brand-badge";
 import { ChannelBadge } from "@/components/channel-badge";
 import { StatusBadge } from "@/components/status-badge";
 import { CaptionThumbnail } from "@/components/caption-thumbnail";
@@ -26,7 +26,7 @@ export function CaptionRow({
         <CaptionThumbnail imageUrl={caption.imageUrl} />
         <div className="flex min-w-0 flex-1 flex-col gap-space-xs">
         <div className="flex flex-wrap items-center gap-space-xs">
-          <BrandBadge brand={caption.brand} />
+          <BrandBadges brands={caption.brands} />
           <ChannelBadge channel={caption.channel} />
           <StatusBadge status={caption.status} />
           {latestVersion && (

@@ -25,7 +25,7 @@ export function ArchiveClient({ allCaptions }: { allCaptions: Caption[] }) {
 
   const items = useMemo(() => {
     const filtered = allCaptions.filter((c) => {
-      const matchBrand = brand === ALL || c.brand === brand;
+      const matchBrand = brand === ALL || c.brands.includes(brand);
       const matchChannel = channel === ALL || c.channel === channel;
       return matchBrand && matchChannel;
     });

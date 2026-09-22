@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BrandBadge } from "@/components/brand-badge";
+import { BrandBadges } from "@/components/brand-badge";
 import { ChannelBadge } from "@/components/channel-badge";
 import { StatusBadge } from "@/components/status-badge";
 import { VersionTimeline } from "@/components/version-timeline";
@@ -61,7 +61,7 @@ export default async function AdminItemDetailPage({
       <div className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-space-md">
           <div className="flex flex-wrap items-center gap-space-xs">
-            <BrandBadge brand={caption.brand} />
+            <BrandBadges brands={caption.brands} />
             <ChannelBadge channel={caption.channel} />
             <StatusBadge status={caption.status} />
           </div>

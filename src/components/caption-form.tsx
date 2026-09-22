@@ -15,7 +15,8 @@ import {
 } from "@/components/ui/select";
 import { CaptionHighlightEditor } from "@/components/caption-highlight-editor";
 import { ImageUrlFields } from "@/components/image-url-fields";
-import { BRANDS, CHANNELS } from "@/lib/types";
+import { BrandPicker } from "@/components/brand-picker";
+import { CHANNELS } from "@/lib/types";
 import type { Caption, ReviewNote } from "@/lib/types";
 import {
   saveCaptionDraft,
@@ -72,25 +73,19 @@ export function CaptionForm({
           )}
         </div>
 
-        <div className="grid grid-cols-1 gap-space-md sm:grid-cols-2">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="brand">
-              แบรนด์ <span className="text-error">*</span>
-            </Label>
-            <Select name="brand" defaultValue={initial?.brand ?? BRANDS[0]}>
-              <SelectTrigger id="brand" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {BRANDS.map((b) => (
-                  <SelectItem key={b} value={b}>
-                    {b}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="flex flex-col gap-1.5">
+          <Label>
+            แบรนด์ <span className="text-error">*</span>
+          </Label>
+          <BrandPicker
+            name="brand"
+            defaultValue={initial?.brands ?? []}
+            invalid={Boolean(errors.brand)}
+          />
+          {errors.brand && <p className="text-body-sm text-error">{errors.brand}</p>}
+        </div>
 
+        <div className="grid grid-cols-1 gap-space-md sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="channel">
               ช่องทาง <span className="text-error">*</span>
