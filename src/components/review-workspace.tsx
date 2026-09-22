@@ -56,6 +56,7 @@ export function ReviewWorkspace({
   const [notes, setNotes] = useState<DraftNote[]>([]);
   const [pendingSelection, setPendingSelection] = useState<string | null>(null);
   const [noteDraft, setNoteDraft] = useState("");
+  const [confirming, setConfirming] = useState<"approve" | "changes" | null>(null);
   const textRef = useRef<HTMLDivElement>(null);
 
   const error = changesState.error ?? approveState.error;
@@ -285,31 +286,92 @@ export function ReviewWorkspace({
 
           {error && <p className="text-body-sm text-error">{error}</p>}
 
-          <form className="flex flex-col gap-space-sm sm:flex-row">
-            <input type="hidden" name="captionId" value={captionId} />
-            <input type="hidden" name="versionNumber" value={versionNumber} />
-            <input type="hidden" name="notesJson" value={notesJson} readOnly />
-            <Button
-              type="submit"
-              formAction={changesAction}
-              variant="destructive"
-              className="flex-1"
-              disabled={isPending}
-            >
-              {isRequestingChanges ? "กำลังบันทึก..." : "ขอแก้"}
-            </Button>
-            <Button
-              type="submit"
-              formAction={approveAction}
-              className="flex-1"
-              disabled={isPending}
-            >
-              {isApproving ? "กำลังบันทึก..." : "ผ่าน"}
-            </Button>
-          </form>
-          <p className="text-body-sm text-on-surface-variant">
-            เมื่อกดผ่านหรือขอแก้ ชิ้นงานจะบันทึกสถานะและหายจากคิวรอตรวจทันที
+          {/* บอกให้ชัดตั้งแต่ก่อนกดว่า "ส่งแล้วจบรอบ" ไม่ใช่การสั่งแก้ทีละจุด
+              แล้วยังมีขั้นยืนยันอีกชั้นกันกดพลาด (PRD 4.2) */}
+          <p className="rounded-lg bg-surface-container-low p-space-sm text-body-sm text-on-surface-variant">
+            ตรวจรอบนี้<strong className="text-on-surface"> ส่งได้ครั้งเดียว</strong> —
+            อ่านให้ครบและเพิ่มโน้ตให้หมดก่อนกดส่ง หลังส่งแล้วจะเพิ่มโน้ตอีกไม่ได้
+            จนกว่าเจ้าของจะส่งเวอร์ชันใหม่มา
           </p>
+
+          {confirming === null && (
+            <div className="flex flex-col gap-space-sm sm:flex-row">
+              <Button
+                type="button"
+                variant="destructive"
+                className="flex-1"
+                onClick={() => setConfirming("changes")}
+                disabled={isPending || notes.length === 0}
+                title={
+                  notes.length === 0
+                    ? "เพิ่มโน้ตอย่างน้อย 1 อันก่อนถึงจะกดขอแก้ได้"
+                    : undefined
+                }
+              >
+                ส่งผลตรวจ: ขอแก้{notes.length > 0 && ` (${notes.length} จุด)`}
+              </Button>
+              <Button
+                type="button"
+                className="flex-1"
+                onClick={() => setConfirming("approve")}
+                disabled={isPending}
+              >
+                ส่งผลตรวจ: ผ่าน
+              </Button>
+            </div>
+          )}
+
+          {confirming === null && notes.length === 0 && (
+            <p className="text-label-sm text-on-surface-variant">
+              ยังไม่มีโน้ต — ถ้าจะขอแก้ ต้องเพิ่มโน้ตอย่างน้อย 1 จุดก่อน
+            </p>
+          )}
+
+          {confirming !== null && (
+            <form className="flex flex-col gap-space-sm rounded-lg border border-primary bg-surface-container-low p-space-md">
+              <input type="hidden" name="captionId" value={captionId} />
+              <input type="hidden" name="versionNumber" value={versionNumber} />
+              <input type="hidden" name="notesJson" value={notesJson} readOnly />
+
+              <p className="text-body-md font-semibold text-on-surface">
+                {confirming === "changes"
+                  ? `ยืนยันส่ง “ขอแก้” พร้อมโน้ต ${notes.length} จุด?`
+                  : "ยืนยันส่ง “ผ่าน”?"}
+              </p>
+              <p className="text-body-sm text-on-surface-variant">
+                {confirming === "changes"
+                  ? "ชิ้นงานจะเปลี่ยนเป็นสถานะ “ขอแก้” และหายจากคิวรอตรวจ เพิ่มโน้ตอีกไม่ได้จนกว่าจะมีเวอร์ชันใหม่"
+                  : notes.length > 0
+                    ? `ชิ้นงานจะผ่านทันที และโน้ต ${notes.length} จุดที่เพิ่มไว้จะถูกส่งไปพร้อมกัน`
+                    : "ชิ้นงานจะเปลี่ยนเป็นสถานะ “ผ่าน” และหายจากคิวรอตรวจ"}
+              </p>
+
+              <div className="flex flex-col gap-space-sm sm:flex-row">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="flex-1"
+                  onClick={() => setConfirming(null)}
+                  disabled={isPending}
+                >
+                  ย้อนกลับไปตรวจต่อ
+                </Button>
+                <Button
+                  type="submit"
+                  formAction={confirming === "changes" ? changesAction : approveAction}
+                  variant={confirming === "changes" ? "destructive" : "default"}
+                  className="flex-1"
+                  disabled={isPending}
+                >
+                  {isPending
+                    ? "กำลังบันทึก..."
+                    : confirming === "changes"
+                      ? "ยืนยันส่งขอแก้"
+                      : "ยืนยันส่งผ่าน"}
+                </Button>
+              </div>
+            </form>
+          )}
         </section>
 
       </div>
