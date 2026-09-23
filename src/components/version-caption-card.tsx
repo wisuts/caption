@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import type { CaptionVersion } from "@/lib/types";
 import { formatThaiDateTime } from "@/lib/thai-date";
 import { HighlightedCaptionText } from "@/components/highlighted-caption-text";
+import { CopyCaptionButton } from "@/components/copy-caption-button";
 import { orderNotesByPosition } from "@/lib/order-notes-by-position";
 
 const RESULT_LABEL: Record<CaptionVersion["reviewResult"], string> = {
@@ -46,9 +47,12 @@ export function VersionCaptionCard({
             {RESULT_LABEL[version.reviewResult]}
           </span>
         </div>
-        <span className="text-label-sm text-on-surface-variant">
-          ส่งตรวจ {formatThaiDateTime(version.submittedAt)}
-        </span>
+        <div className="flex items-center gap-space-sm">
+          <span className="text-label-sm text-on-surface-variant">
+            ส่งตรวจ {formatThaiDateTime(version.submittedAt)}
+          </span>
+          <CopyCaptionButton text={version.text} />
+        </div>
       </div>
       <div className="rounded-lg bg-surface-container-low p-space-md text-body-md text-on-surface">
         <HighlightedCaptionText

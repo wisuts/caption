@@ -5,6 +5,7 @@ import { HighlightedCaptionText } from "@/components/highlighted-caption-text";
 import type { HighlightMark } from "@/components/highlighted-caption-text";
 import { CaptionDiffView } from "@/components/caption-diff-view";
 import { VersionCaptionCard } from "@/components/version-caption-card";
+import { CopyCaptionButton } from "@/components/copy-caption-button";
 import type { CaptionVersion } from "@/lib/types";
 
 /**
@@ -77,7 +78,10 @@ export function CaptionTabs({
           </button>
         ))}
       </div>
-      <p className="text-label-sm text-on-surface-variant">{hint}</p>
+      <div className="flex flex-wrap items-center justify-between gap-space-xs">
+        <p className="text-label-sm text-on-surface-variant">{hint}</p>
+        {activeTab === "latest" && <CopyCaptionButton text={text} />}
+      </div>
       <div
         ref={textRef}
         onMouseUp={activeTab === "latest" ? onMouseUp : undefined}
