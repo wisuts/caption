@@ -197,6 +197,8 @@ export function ReviewWorkspace({
             </ul>
             <p className="text-label-sm text-on-surface-variant">
               เทียบกับเวอร์ชัน {previousVersionNumber} ที่คุณตรวจไปรอบก่อน
+              {versionNumber - (previousVersionNumber ?? 0) > 1 &&
+                ` (เจ้าของส่งแก้มา ${versionNumber - (previousVersionNumber ?? 0)} รอบ รวมให้แล้วทั้งหมด)`}
             </p>
           </section>
         )}

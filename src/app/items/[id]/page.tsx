@@ -9,7 +9,7 @@ import { CaptionImage } from "@/components/caption-image";
 import { getCaptionByIdDb } from "@/lib/db/queries";
 import {
   getLatestSubmittedVersion,
-  getPreviousVersion,
+  getLastReviewedVersion,
 } from "@/lib/caption-helpers";
 import { formatThaiDate, formatThaiDateTime } from "@/lib/thai-date";
 
@@ -30,7 +30,7 @@ export default async function ItemDetailPage({
   }
 
   const latestVersion = getLatestSubmittedVersion(caption);
-  const previousVersion = getPreviousVersion(caption);
+  const previousVersion = getLastReviewedVersion(caption);
   const canReview = caption.status === "pending_review";
 
   return (

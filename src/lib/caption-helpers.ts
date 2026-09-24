@@ -6,11 +6,20 @@ export function getLatestSubmittedVersion(caption: Caption) {
 }
 
 /**
- * เวอร์ชันก่อนหน้าเวอร์ชันล่าสุด ใช้เทียบว่ารอบนี้เปลี่ยนอะไรไปบ้าง
- * และแก้ตามที่หัวหน้าสั่งไว้ครบหรือยัง
+ * เวอร์ชันล่าสุดที่หัวหน้า "ตรวจไปแล้ว" ใช้เป็นตัวตั้งต้นในการเทียบ
+ *
+ * ต้องยึดเวอร์ชันที่ถูกตรวจ ไม่ใช่เวอร์ชันก่อนหน้าเฉย ๆ เพราะเจ้าของส่งซ้ำได้
+ * หลายรอบก่อนหัวหน้าจะกลับมาดู ถ้าเทียบกับเวอร์ชันก่อนหน้า หัวหน้าจะเห็นแค่
+ * การแก้ครั้งสุดท้าย และเช็กลิสต์ "รอบที่แล้วขอแก้กี่จุด" จะหายไปด้วย
  */
-export function getPreviousVersion(caption: Caption) {
-  return caption.versions[caption.versions.length - 2] ?? null;
+export function getLastReviewedVersion(caption: Caption) {
+  const latest = getLatestSubmittedVersion(caption);
+  for (let i = caption.versions.length - 1; i >= 0; i--) {
+    const version = caption.versions[i];
+    if (version.versionNumber === latest?.versionNumber) continue;
+    if (version.reviewResult !== "pending") return version;
+  }
+  return null;
 }
 
 /** เช็คว่าชิ้นงานนี้มีข้อความแก้ค้างที่ยังไม่ได้ส่งตรวจอยู่หรือไม่ */

@@ -2,12 +2,48 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { and, eq, sql } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { captions, captionVersions } from "@/lib/db/schema";
 import { CHANNELS, type Channel } from "@/lib/types";
 import { joinBrands, parseBrands } from "@/lib/brands";
 import { joinImageUrls, parseImageUrls } from "@/lib/image-url";
+
+/**
+ * เก็บข้อความเป็นเวอร์ชันส่งตรวจ
+ *
+ * ถ้าเวอร์ชันล่าสุดยังไม่ถูกตรวจ จะ "แก้ทับ" เวอร์ชันนั้นแทนการสร้างเวอร์ชันใหม่
+ * เพราะเจ้าของมักส่งไปแล้วนึกได้ว่าลืมแก้อีกจุด ไม่ควรกลายเป็นคนละเวอร์ชัน
+ * แต่ถ้าหัวหน้าตรวจไปแล้ว ต้องขึ้นเวอร์ชันใหม่เสมอ เพราะโน้ตของหัวหน้าผูกกับ
+ * ข้อความของเวอร์ชันนั้นอยู่ ถ้าแก้ทับ โน้ตจะชี้ไปยังข้อความที่ไม่มีแล้ว
+ */
+async function saveAsPendingVersion(captionId: string, text: string) {
+  const [latest] = await db
+    .select({
+      id: captionVersions.id,
+      versionNumber: captionVersions.versionNumber,
+      reviewResult: captionVersions.reviewResult,
+    })
+    .from(captionVersions)
+    .where(eq(captionVersions.captionId, captionId))
+    .orderBy(desc(captionVersions.versionNumber))
+    .limit(1);
+
+  if (latest && latest.reviewResult === "pending") {
+    await db
+      .update(captionVersions)
+      .set({ text, submittedAt: new Date() })
+      .where(eq(captionVersions.id, latest.id));
+    return;
+  }
+
+  await db.insert(captionVersions).values({
+    captionId,
+    versionNumber: (latest?.versionNumber ?? 0) + 1,
+    text,
+    reviewResult: "pending",
+  });
+}
 
 export type CaptionFormState = {
   errors: Partial<Record<"title" | "brand" | "channel" | "captionText", string>>;
@@ -139,19 +175,7 @@ export async function submitCaptionForReview(
     captionId = inserted.id;
   }
 
-  const [{ nextVersion }] = await db
-    .select({
-      nextVersion: sql<number>`coalesce(max(${captionVersions.versionNumber}), 0) + 1`,
-    })
-    .from(captionVersions)
-    .where(eq(captionVersions.captionId, captionId));
-
-  await db.insert(captionVersions).values({
-    captionId,
-    versionNumber: nextVersion,
-    text: fields.captionText,
-    reviewResult: "pending",
-  });
+  await saveAsPendingVersion(captionId, fields.captionText);
 
   revalidatePath("/admin");
   revalidatePath(`/admin/${captionId}`);
@@ -195,19 +219,7 @@ export async function submitCurrentDraftForReview(
     return { error: "ยังไม่มีตัวแคปชัน กรุณากด \"แก้ไข\" แล้วพิมพ์ข้อความก่อนส่งตรวจ" };
   }
 
-  const [{ nextVersion }] = await db
-    .select({
-      nextVersion: sql<number>`coalesce(max(${captionVersions.versionNumber}), 0) + 1`,
-    })
-    .from(captionVersions)
-    .where(eq(captionVersions.captionId, captionId));
-
-  await db.insert(captionVersions).values({
-    captionId,
-    versionNumber: nextVersion,
-    text: current.pendingDraftText,
-    reviewResult: "pending",
-  });
+  await saveAsPendingVersion(captionId, current.pendingDraftText);
 
   await db
     .update(captions)
