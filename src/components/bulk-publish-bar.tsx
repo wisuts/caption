@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   markCaptionPublished,
@@ -25,11 +25,9 @@ export function BulkPublishBar({
     EMPTY_STATE
   );
 
-  // พอบันทึกเสร็จ (ไม่มี error และไม่ได้กำลังทำงาน) ให้ล้างที่ติ๊กไว้
-  useEffect(() => {
-    if (!isPending && !state.error) onDone();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state, isPending]);
+  // ไม่ต้องล้างที่ติ๊กไว้เอง — พอบันทึกเสร็จชิ้นพวกนั้นจะไม่ใช่สถานะ "ผ่าน" แล้ว
+  // แถบนี้จึงหายไปเองโดยปริยาย (เคยใส่ useEffect ไว้ล้างให้ แต่มันทำงานตั้งแต่
+  // ตอนแถบโผล่ครั้งแรกด้วย เลยไปล้างสิ่งที่เพิ่งติ๊ก ทำให้ติ๊กไม่ติดสักที)
 
   return (
     <form
