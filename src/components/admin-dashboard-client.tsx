@@ -69,15 +69,21 @@ export function AdminDashboardClient({ allCaptions }: { allCaptions: Caption[] }
     return sortCaptions(filtered, sort);
   }, [allCaptions, status, brand, channel, sort]);
 
-  // นับเฉพาะชิ้นที่ยังเห็นอยู่ในรายการและยังเป็นสถานะ "ผ่าน" จริง ๆ
-  // เผื่อกรองรายการใหม่หรือสถานะเปลี่ยนไปแล้วหลังติ๊กไว้
-  const selected = useMemo(
-    () =>
-      items
-        .filter((c) => c.status === "approved" && selectedIds.includes(c.id))
-        .map((c) => c.id),
-    [items, selectedIds]
+  // ติ๊กได้เฉพาะชิ้นที่ "ผ่าน" และต้องยังอยู่ในรายการที่กรองไว้ตอนนี้ด้วย
+  // เผื่อเปลี่ยนตัวกรองหรือสถานะเปลี่ยนไปแล้วหลังติ๊กไว้
+  const selectable = useMemo(
+    () => items.filter((c) => c.status === "approved").map((c) => c.id),
+    [items]
   );
+  const selected = useMemo(
+    () => selectable.filter((id) => selectedIds.includes(id)),
+    [selectable, selectedIds]
+  );
+  const allSelected = selectable.length > 0 && selected.length === selectable.length;
+
+  function toggleSelectAll() {
+    setSelectedIds(allSelected ? [] : selectable);
+  }
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-space-lg px-gutter-desktop py-space-xl">
@@ -187,6 +193,26 @@ export function AdminDashboardClient({ allCaptions }: { allCaptions: Caption[] }
         <EmptyState title="ไม่เจองานที่ตรงกับตัวกรองนี้" />
       ) : (
         <>
+          {/* วาง "เลือกทั้งหมด" ไว้เหนือแถบสรุปเสมอ ไม่งั้นพอแถบโผล่ขึ้นมา
+              ปุ่มนี้จะถูกดันลงไปใต้เมาส์ที่เพิ่งคลิก */}
+          {selectable.length > 0 && (
+            <label className="flex w-fit cursor-pointer items-center gap-space-xs text-label-md text-on-surface-variant">
+              <input
+                type="checkbox"
+                checked={allSelected}
+                onChange={toggleSelectAll}
+                ref={(el) => {
+                  // ติ๊กบางส่วนให้ขึ้นเป็นขีดกลาง ไม่ใช่ติ๊กถูกเต็ม
+                  if (el) el.indeterminate = selected.length > 0 && !allSelected;
+                }}
+                className="size-4 accent-primary"
+              />
+              {allSelected
+                ? `ยกเลิกทั้งหมด (${selectable.length} ชิ้น)`
+                : `เลือกทั้งหมดที่ผ่านแล้ว (${selectable.length} ชิ้น)`}
+            </label>
+          )}
+
           {selected.length > 0 && (
             <BulkPublishBar
               captionIds={selected}
