@@ -6,7 +6,6 @@ import { CaptionRow } from "@/components/caption-row";
 import { EmptyState } from "@/components/empty-state";
 import { SortSelect } from "@/components/sort-select";
 import { MarkPublishedButton } from "@/components/mark-published-button";
-import { DuplicateCaptionButton } from "@/components/duplicate-caption-button";
 import { BulkPublishBar } from "@/components/bulk-publish-bar";
 import { sortCaptions, type SortOrder } from "@/lib/sort-captions";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -247,7 +246,6 @@ export function AdminDashboardClient({ allCaptions }: { allCaptions: Caption[] }
                     {caption.status === "approved" && (
                       <MarkPublishedButton captionId={caption.id} compact />
                     )}
-                    <DuplicateCaptionButton captionId={caption.id} compact />
                     <Link
                       href={`/admin/${caption.id}`}
                       className={buttonVariants({ variant: "ghost" })}

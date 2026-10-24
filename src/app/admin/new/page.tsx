@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { CaptionForm } from "@/components/caption-form";
+import { getRecentTitlesDb } from "@/lib/db/queries";
 
-export default function NewCaptionPage() {
+export const dynamic = "force-dynamic";
+
+export default async function NewCaptionPage() {
+  const recentTitles = await getRecentTitlesDb();
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-space-lg px-gutter-desktop py-space-xl">
       <Link
@@ -17,7 +21,7 @@ export default function NewCaptionPage() {
           ให้ครบก่อนส่งตรวจ
         </p>
       </div>
-      <CaptionForm />
+      <CaptionForm recentTitles={recentTitles} />
     </main>
   );
 }

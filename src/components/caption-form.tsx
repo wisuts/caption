@@ -16,6 +16,7 @@ import {
 import { CaptionHighlightEditor } from "@/components/caption-highlight-editor";
 import { ImageUrlFields } from "@/components/image-url-fields";
 import { BrandPicker } from "@/components/brand-picker";
+import { TitleField } from "@/components/title-field";
 import { CHANNELS } from "@/lib/types";
 import type { Caption, ReviewNote } from "@/lib/types";
 import {
@@ -31,8 +32,11 @@ export function CaptionForm({
   initial,
   reviewNotes,
   reviewedText,
+  recentTitles = [],
 }: {
   initial?: Caption;
+  /** ชื่อที่เคยตั้งไว้ ใช้เป็นตัวช่วยเติมชื่อ */
+  recentTitles?: string[];
   /** โน้ตที่หัวหน้าขอให้แก้จากเวอร์ชันล่าสุด — มีเฉพาะตอนเข้ามาแก้ชิ้นงานที่ถูกตรวจแล้ว */
   reviewNotes?: ReviewNote[];
   reviewedText?: string;
@@ -61,12 +65,10 @@ export function CaptionForm({
           <Label htmlFor="title">
             หัวข้อสั้น <span className="text-error">*</span>
           </Label>
-          <Input
-            id="title"
-            name="title"
-            placeholder="เช่น เปิดตัวคอร์ส AI Data Analyst ลดราคา 50%"
-            defaultValue={initial?.title}
-            aria-invalid={Boolean(errors.title)}
+          <TitleField
+            defaultValue={initial?.title ?? ""}
+            recentTitles={recentTitles}
+            invalid={Boolean(errors.title)}
           />
           {errors.title && (
             <p className="text-body-sm text-error">{errors.title}</p>

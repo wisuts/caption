@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CaptionForm } from "@/components/caption-form";
-import { getCaptionByIdDb } from "@/lib/db/queries";
+import { getCaptionByIdDb, getRecentTitlesDb } from "@/lib/db/queries";
 import { getLatestSubmittedVersion } from "@/lib/caption-helpers";
 
 export default async function EditCaptionPage({
@@ -10,7 +10,10 @@ export default async function EditCaptionPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const caption = await getCaptionByIdDb(id);
+  const [caption, recentTitles] = await Promise.all([
+    getCaptionByIdDb(id),
+    getRecentTitlesDb(),
+  ]);
 
   if (!caption) {
     notFound();
@@ -34,6 +37,7 @@ export default async function EditCaptionPage({
         initial={caption}
         reviewNotes={latestVersion?.notes}
         reviewedText={latestVersion?.text}
+        recentTitles={recentTitles}
       />
     </main>
   );

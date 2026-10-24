@@ -83,6 +83,22 @@ export async function getPendingReviewCaptionsDb(): Promise<Caption[]> {
 }
 
 /**
+ * ชื่อแคปชันที่เคยตั้งไว้ เรียงใหม่สุดก่อน (PRD 5.2)
+ * ใช้เป็นตัวช่วยเติมชื่อ เพราะงานชุดเดียวกันมักตั้งชื่อคล้ายกัน
+ * ต่างแค่วงเล็บท้าย จะได้ไม่ต้องพิมพ์ชื่อแคมเปญยาว ๆ ใหม่ทุกครั้ง
+ */
+export async function getRecentTitlesDb(limit = 60): Promise<string[]> {
+  const rows = await db
+    .select({ title: captions.title })
+    .from(captions)
+    .where(eq(captions.isDeleted, false))
+    .orderBy(desc(captions.createdAt))
+    .limit(limit);
+
+  return [...new Set(rows.map((r) => r.title.trim()).filter(Boolean))];
+}
+
+/**
  * ชิ้นงานที่หัวหน้าสั่งแก้ไปแล้ว รอเจ้าของแก้กลับมา (PRD 4.1)
  * มีไว้ให้หัวหน้าเห็นว่าที่ตรวจไปบันทึกแล้วจริง และตอนนี้รออีกฝ่ายอยู่
  */
