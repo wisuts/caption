@@ -36,6 +36,8 @@ export type ReviewResult = "pending" | "approved" | "changes_requested";
 export interface ReviewNote {
   id: string;
   quotedText: string | null;
+  /** ลิงก์รูปที่โน้ตนี้พูดถึง — ว่างถ้าเป็นโน้ตของตัวหนังสือ */
+  imageUrl: string | null;
   note: string;
   createdAt: string;
 }

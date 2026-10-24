@@ -7,6 +7,8 @@ import { CaptionTabs } from "@/components/caption-tabs";
 import { VersionTimeline } from "@/components/version-timeline";
 import { orderNotesByPosition } from "@/lib/order-notes-by-position";
 import { getPreviousRoundNotes } from "@/lib/previous-round-status";
+import { parseImageUrls } from "@/lib/image-url";
+import { CaptionImage } from "@/components/caption-image";
 import type { CaptionVersion, ReviewNote } from "@/lib/types";
 import {
   approveCaption,
@@ -19,6 +21,8 @@ const EMPTY_STATE: ReviewActionState = {};
 type DraftNote = {
   clientId: string;
   quotedText: string | null;
+  /** ถ้ามีค่า = โน้ตนี้เป็นของรูปใบนั้น ไม่ใช่ของตัวหนังสือ */
+  imageUrl: string | null;
   note: string;
 };
 
@@ -34,6 +38,7 @@ export function ReviewWorkspace({
   previousVersionNumber,
   previousText,
   previousNotes,
+  imageUrl,
 }: {
   captionId: string;
   versionNumber: number;
@@ -43,6 +48,8 @@ export function ReviewWorkspace({
   previousVersionNumber?: number;
   previousText?: string;
   previousNotes?: ReviewNote[];
+  /** ลิงก์รูปประกอบ (หลายรูปคั่นด้วยบรรทัด) — แสดงในนี้เพื่อให้คอมเมนต์รูปได้ */
+  imageUrl?: string | null;
 }) {
   const [approveState, approveAction, isApproving] = useActionState(
     approveCaption,
@@ -55,12 +62,29 @@ export function ReviewWorkspace({
 
   const [notes, setNotes] = useState<DraftNote[]>([]);
   const [pendingSelection, setPendingSelection] = useState<string | null>(null);
+  // รูปที่กำลังจะคอมเมนต์ — เลือกได้ทีละใบ พิมพ์โน้ตแล้วกดเพิ่มเหมือนคอมเมนต์ข้อความ
+  const [pendingImage, setPendingImage] = useState<string | null>(null);
   const [noteDraft, setNoteDraft] = useState("");
   const [confirming, setConfirming] = useState<"approve" | "changes" | null>(null);
   const textRef = useRef<HTMLDivElement>(null);
 
+  const imageList = parseImageUrls(imageUrl ?? null);
+  /** เรียกรูปว่า "รูปที่ N" ตามลำดับที่แสดงอยู่ ถ้าหาไม่เจอแปลว่ารูปถูกเปลี่ยนไปแล้ว */
+  function imageLabel(url: string) {
+    const i = imageList.indexOf(url);
+    if (i === -1) return "รูปที่ถูกเปลี่ยนไปแล้ว";
+    return imageList.length > 1 ? `รูปที่ ${i + 1}` : "รูปประกอบ";
+  }
+
   const error = changesState.error ?? approveState.error;
   const isPending = isApproving || isRequestingChanges;
+
+  /** กด "คอมเมนต์รูปนี้" ใต้รูป — เล็งรูปใบนั้นไว้ แล้วพาไปพิมพ์ในกล่องตรวจ */
+  function startImageComment(url: string) {
+    setPendingImage(url);
+    setPendingSelection(null);
+    window.getSelection()?.removeAllRanges();
+  }
 
   function handleMouseUp() {
     const selection = window.getSelection();
@@ -75,6 +99,7 @@ export function ReviewWorkspace({
       text.replace(/\r\n/g, "\n").includes(selectedText)
     ) {
       setPendingSelection(selectedText);
+      setPendingImage(null);
     }
   }
 
@@ -83,10 +108,16 @@ export function ReviewWorkspace({
     if (!noteText) return;
     setNotes((prev) => [
       ...prev,
-      { clientId: crypto.randomUUID(), quotedText: pendingSelection, note: noteText },
+      {
+        clientId: crypto.randomUUID(),
+        quotedText: pendingSelection,
+        imageUrl: pendingImage,
+        note: noteText,
+      },
     ]);
     setNoteDraft("");
     setPendingSelection(null);
+    setPendingImage(null);
     window.getSelection()?.removeAllRanges();
   }
 
@@ -95,7 +126,11 @@ export function ReviewWorkspace({
   }
 
   const notesJson = JSON.stringify(
-    notes.map((n) => ({ quotedText: n.quotedText, note: n.note }))
+    notes.map((n) => ({
+      quotedText: n.quotedText,
+      imageUrl: n.imageUrl,
+      note: n.note,
+    }))
   );
 
   // เลขกำกับตามตำแหน่งที่ปรากฏในข้อความ ให้ตรงกับที่ไฮไลต์ในเนื้อแคปชัน
@@ -139,6 +174,22 @@ export function ReviewWorkspace({
 
   return (
     <div className="flex flex-col gap-space-lg">
+      {/* รูปอยู่ในนี้ (ไม่ใช่ในหน้าแม่) เพื่อให้ปุ่ม "คอมเมนต์รูปนี้" ต่อเข้ากับโน้ตได้ */}
+      <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
+        <h2 className="text-headline-sm text-on-surface">รูปภาพประกอบแคปชัน</h2>
+        {imageList.length > 0 ? (
+          <CaptionImage
+            imageUrl={imageUrl ?? ""}
+            onComment={startImageComment}
+            commentedUrls={notes
+              .map((n) => n.imageUrl)
+              .filter((u): u is string => u !== null)}
+          />
+        ) : (
+          <p className="text-body-md text-on-surface-variant">ยังไม่ได้ใส่ลิงก์รูป</p>
+        )}
+      </section>
+
       <div className="grid grid-cols-1 gap-space-lg lg:grid-cols-12">
       <div className="flex flex-col gap-space-lg lg:col-span-7 xl:col-span-8">
         <CaptionTabs
@@ -225,9 +276,22 @@ export function ReviewWorkspace({
                   ยกเลิกจุดนี้
                 </button>
               </div>
+            ) : pendingImage ? (
+              <div className="flex items-start justify-between gap-space-sm">
+                <span className="inline-flex items-center gap-1.5 rounded bg-primary-fixed px-1.5 py-0.5 text-label-sm text-on-primary-fixed">
+                  กำลังคอมเมนต์ {imageLabel(pendingImage)}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setPendingImage(null)}
+                  className="shrink-0 text-label-sm text-on-surface-variant hover:text-error"
+                >
+                  ยกเลิกรูปนี้
+                </button>
+              </div>
             ) : (
               <p className="text-label-sm text-on-surface-variant">
-                ยังไม่ได้เลือกข้อความ — โน้ตนี้จะเป็นโน้ตรวม (ไม่ชี้เฉพาะจุด)
+                ยังไม่ได้เลือกข้อความหรือรูป — โน้ตนี้จะเป็นโน้ตรวม
               </p>
             )}
             <Textarea
@@ -260,9 +324,14 @@ export function ReviewWorkspace({
                       </span>
                     )}
                     <div className="flex flex-col gap-0.5">
-                      {!n.quotedText && (
+                      {!n.quotedText && !n.imageUrl && (
                         <span className="text-label-sm font-semibold text-on-surface-variant">
                           โน้ตรวม
+                        </span>
+                      )}
+                      {n.imageUrl && (
+                        <span className="w-fit rounded bg-primary-fixed px-1.5 py-0.5 text-label-sm text-on-primary-fixed">
+                          {imageLabel(n.imageUrl)}
                         </span>
                       )}
                       {n.quotedText && (

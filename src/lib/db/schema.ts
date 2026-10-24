@@ -87,6 +87,9 @@ export const reviewNotes = pgTable("review_notes", {
     .references(() => captionVersions.id, { onDelete: "cascade" }),
   // ข้อความที่หัวหน้าลากคลุมไว้ในแคปชัน — ว่างได้ถ้าเป็นโน้ตรวม ไม่ชี้เฉพาะจุด
   quotedText: text("quoted_text"),
+  // ลิงก์รูปที่โน้ตนี้พูดถึง — ว่างถ้าเป็นโน้ตของตัวหนังสือ
+  // เก็บเป็นลิงก์ ไม่ใช่ลำดับที่ เพราะถ้าสลับลำดับรูปทีหลัง ลำดับจะชี้ผิดใบ
+  imageUrl: text("image_url"),
   note: text("note").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()

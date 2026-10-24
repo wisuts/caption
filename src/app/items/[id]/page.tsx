@@ -12,6 +12,7 @@ import {
   getLastReviewedVersion,
 } from "@/lib/caption-helpers";
 import { formatThaiDate, formatThaiDateTime } from "@/lib/thai-date";
+import type { ReviewNote } from "@/lib/types";
 
 // หน้ารายละเอียดชิ้นงาน ฝั่งหัวหน้า/สาธารณะ (PRD 4.2) — ไม่ต้อง login
 // ต้องดึงข้อมูลสดทุกครั้ง ห้าม cache แบบหน้า static เพราะข้อมูลเปลี่ยนบ่อย
@@ -72,22 +73,22 @@ export default async function ItemDetailPage({
       </div>
 
       {canReview && latestVersion ? (
-        <div className="flex flex-col gap-space-lg">
-          <ImageSection imageUrl={caption.imageUrl} />
-
-          <ReviewWorkspace
-            captionId={caption.id}
-            versionNumber={latestVersion.versionNumber}
-            text={latestVersion.text}
-            versions={caption.versions}
-            previousVersionNumber={previousVersion?.versionNumber}
-            previousText={previousVersion?.text}
-            previousNotes={previousVersion?.notes}
-          />
-        </div>
+        <ReviewWorkspace
+          captionId={caption.id}
+          versionNumber={latestVersion.versionNumber}
+          text={latestVersion.text}
+          versions={caption.versions}
+          previousVersionNumber={previousVersion?.versionNumber}
+          previousText={previousVersion?.text}
+          previousNotes={previousVersion?.notes}
+          imageUrl={caption.imageUrl}
+        />
       ) : (
         <div className="flex flex-col gap-space-lg">
-          <ImageSection imageUrl={caption.imageUrl} />
+          <ImageSection
+            imageUrl={caption.imageUrl}
+            imageNotes={latestVersion?.notes ?? []}
+          />
 
           {latestVersion ? (
             <CaptionReader
@@ -112,12 +113,18 @@ export default async function ItemDetailPage({
   );
 }
 
-function ImageSection({ imageUrl }: { imageUrl: string | null }) {
+function ImageSection({
+  imageUrl,
+  imageNotes = [],
+}: {
+  imageUrl: string | null;
+  imageNotes?: ReviewNote[];
+}) {
   return (
     <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
       <h2 className="text-headline-sm text-on-surface">รูปภาพประกอบแคปชัน</h2>
       {imageUrl ? (
-        <CaptionImage imageUrl={imageUrl} />
+        <CaptionImage imageUrl={imageUrl} imageNotes={imageNotes} />
       ) : (
         <p className="text-body-md text-on-surface-variant">ยังไม่ได้ใส่ลิงก์รูป</p>
       )}

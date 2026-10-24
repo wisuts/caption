@@ -100,7 +100,10 @@ export default async function AdminItemDetailPage({
           <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
             <h2 className="text-headline-sm text-on-surface">รูปภาพประกอบแคปชัน</h2>
             {caption.imageUrl ? (
-              <CaptionImage imageUrl={caption.imageUrl} />
+              <CaptionImage
+                imageUrl={caption.imageUrl}
+                imageNotes={latestVersion?.notes ?? []}
+              />
             ) : (
               <p className="text-body-md text-on-surface-variant">ยังไม่ได้ใส่ลิงก์รูป</p>
             )}

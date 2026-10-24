@@ -12,6 +12,8 @@ export type ReviewActionState = {
 
 type IncomingNote = {
   quotedText: string | null;
+  /** ลิงก์รูปที่โน้ตนี้พูดถึง — ว่างถ้าเป็นโน้ตของตัวหนังสือ */
+  imageUrl: string | null;
   note: string;
 };
 
@@ -32,8 +34,11 @@ function parseNotes(raw: string): IncomingNote[] {
       const quotedRaw = (item as Record<string, unknown>).quotedText;
       const quotedText =
         typeof quotedRaw === "string" && quotedRaw.trim() ? quotedRaw.trim() : null;
+      const imageRaw = (item as Record<string, unknown>).imageUrl;
+      const imageUrl =
+        typeof imageRaw === "string" && imageRaw.trim() ? imageRaw.trim() : null;
       if (!note) return null;
-      return { quotedText, note };
+      return { quotedText, imageUrl, note };
     })
     .filter((n): n is IncomingNote => n !== null);
 }
@@ -95,6 +100,7 @@ async function applyReview(
       notes.map((n) => ({
         versionId,
         quotedText: n.quotedText,
+        imageUrl: n.imageUrl,
         note: n.note,
       }))
     );

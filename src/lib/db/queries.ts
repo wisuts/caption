@@ -23,6 +23,7 @@ function toCaption(row: CaptionRow, versionRows: CaptionVersionRow[]): Caption {
         .map((n) => ({
           id: n.id,
           quotedText: n.quotedText,
+          imageUrl: n.imageUrl,
           note: n.note,
           createdAt: n.createdAt.toISOString(),
         }));

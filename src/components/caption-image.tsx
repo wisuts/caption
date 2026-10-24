@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { parseImageUrls, toPreviewImageUrl } from "@/lib/image-url";
+import { Button } from "@/components/ui/button";
+import type { ReviewNote } from "@/lib/types";
 
 /**
  * โชว์รูปประกอบจริง ไม่ใช่แค่ลิงก์ (PRD 4.2 / 5.3) — ใส่ได้หลายรูปต่อแคปชัน
@@ -9,7 +11,20 @@ import { parseImageUrls, toPreviewImageUrl } from "@/lib/image-url";
  * ถ้ารูปไหนโหลดไม่ขึ้น (เช่นลิงก์ยังไม่ได้เปิดให้คนอื่นดู) จะบอกสาเหตุเฉพาะรูปนั้น
  * รูปที่เหลือยังแสดงตามปกติ
  */
-export function CaptionImage({ imageUrl }: { imageUrl: string }) {
+export function CaptionImage({
+  imageUrl,
+  imageNotes = [],
+  onComment,
+  commentedUrls = [],
+}: {
+  imageUrl: string;
+  /** โน้ตของหัวหน้าที่ผูกกับรูป — แสดงใต้รูปใบที่ถูกคอมเมนต์ */
+  imageNotes?: ReviewNote[];
+  /** ถ้าส่งมา = หน้านี้คอมเมนต์รูปได้ จะมีปุ่มใต้รูปแต่ละใบ */
+  onComment?: (url: string) => void;
+  /** ลิงก์รูปที่คอมเมนต์ไว้แล้วในรอบนี้ ใช้บอกสถานะบนปุ่ม */
+  commentedUrls?: string[];
+}) {
   const urls = parseImageUrls(imageUrl);
 
   if (urls.length === 0) return null;
@@ -27,6 +42,9 @@ export function CaptionImage({ imageUrl }: { imageUrl: string }) {
             key={`${url}-${i}`}
             url={url}
             index={urls.length > 1 ? i + 1 : null}
+            notes={imageNotes.filter((n) => n.imageUrl === url)}
+            onComment={onComment}
+            alreadyCommented={commentedUrls.includes(url)}
           />
         ))}
       </div>
@@ -34,7 +52,19 @@ export function CaptionImage({ imageUrl }: { imageUrl: string }) {
   );
 }
 
-function SingleImage({ url, index }: { url: string; index: number | null }) {
+function SingleImage({
+  url,
+  index,
+  notes,
+  onComment,
+  alreadyCommented,
+}: {
+  url: string;
+  index: number | null;
+  notes: ReviewNote[];
+  onComment?: (url: string) => void;
+  alreadyCommented?: boolean;
+}) {
   const [failed, setFailed] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
@@ -71,14 +101,39 @@ function SingleImage({ url, index }: { url: string; index: number | null }) {
         </a>
       )}
 
-      <a
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-primary-fixed px-space-md py-2 text-label-md font-medium text-on-primary-fixed hover:bg-primary-fixed-dim"
-      >
-        เปิดดูรูปต้นฉบับ ↗
-      </a>
+      <div className="flex flex-wrap items-center gap-space-xs">
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-primary-fixed px-space-md py-2 text-label-md font-medium text-on-primary-fixed hover:bg-primary-fixed-dim"
+        >
+          เปิดดูรูปต้นฉบับ ↗
+        </a>
+        {onComment && (
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => onComment(url)}
+            disabled={alreadyCommented}
+          >
+            {alreadyCommented ? "คอมเมนต์รูปนี้แล้ว" : "คอมเมนต์รูปนี้"}
+          </Button>
+        )}
+      </div>
+
+      {notes.length > 0 && (
+        <div className="flex max-w-96 flex-col gap-space-xs rounded-lg bg-error-container/40 p-space-sm">
+          <p className="text-label-sm font-semibold text-on-error-container">
+            โน้ตจากหัวหน้าเรื่องรูปนี้
+          </p>
+          {notes.map((n) => (
+            <p key={n.id} className="text-body-sm italic text-on-surface">
+              {n.note}
+            </p>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
