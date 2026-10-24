@@ -15,7 +15,7 @@ export type JustReviewed = {
 };
 
 // หน้าคิวรอตรวจ (PRD 4.1) — รับข้อมูลจริงจาก server component แม่ (src/app/page.tsx)
-// แบ่งเป็น "รอคุณตรวจ" (ต้องลงมือ) กับ "รอเจ้าของแก้" (ไม่ต้องทำอะไร แต่ยังไม่จบ)
+// แบ่งเป็น "ยังไม่ได้ตรวจ" (ต้องลงมือ) กับ "ตรวจแล้ว รอแก้กลับมา" (ไม่ต้องทำอะไร แต่ยังไม่จบ)
 // เพราะเดิมพอตรวจเสร็จชิ้นงานหายไปเฉย ๆ หัวหน้าไม่รู้ว่าบันทึกแล้วหรือกดผิด
 export function ReviewQueueClient({
   allCaptions,
@@ -52,7 +52,7 @@ export function ReviewQueueClient({
 
       <div className="flex flex-col gap-space-xs">
         <h1 className="text-display-lg text-on-background">
-          รอคุณตรวจ {items.length > 0 && `(${items.length})`}
+          ยังไม่ได้ตรวจ {items.length > 0 && `(${items.length})`}
         </h1>
         <p className="text-body-md text-on-surface-variant">
           คลิกเลือกรายการเพื่อเปิดอ่านแคปชัน ตรวจรูปประกอบ และส่งผลการตรวจได้ทันที
