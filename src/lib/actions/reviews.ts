@@ -108,7 +108,7 @@ async function applyReview(
         eq(captionVersions.reviewResult, "pending")
       )
     )
-    .returning({ id: captionVersions.id });
+    .returning({ id: captionVersions.id, text: captionVersions.text });
 
   if (updatedVersion.length === 0) {
     const [latest] = await db
@@ -124,7 +124,7 @@ async function applyReview(
     return { error: "ชิ้นงานนี้ถูกตรวจไปแล้ว" };
   }
 
-  const versionId = updatedVersion[0].id;
+  const { id: versionId, text: reviewedText } = updatedVersion[0];
 
   if (notes.length > 0) {
     await db.insert(reviewNotes).values(
@@ -139,21 +139,26 @@ async function applyReview(
   }
 
   // หัวหน้า "แก้ไขเลย" = แก้แคปชันตัวจริงให้เลย ไม่ใช่แค่เสนอไว้เฉย ๆ
-  // เขียนทับลงร่างที่เจ้าของกำลังแก้อยู่ เปิดหน้าแก้มาก็เห็นข้อความใหม่พร้อมใช้
   // เวอร์ชันที่ส่งตรวจไปแล้วไม่ถูกแตะ ยังเป็นหลักฐานว่าตอนนั้นส่งอะไรไป
-  const edited = applyEditsToDraft(
-    (await db
-      .select({ draft: captions.pendingDraftText })
-      .from(captions)
-      .where(eq(captions.id, captionId)))[0]?.draft ?? "",
-    notes
-  );
+  const fixedText = applyEditsToDraft(reviewedText, notes);
+
+  if (result === "approved" && fixedText !== null) {
+    // หัวหน้าแก้เองแล้วกดผ่าน = จบงานตรงนี้เลย ไม่ต้องเด้งกลับไปให้เจ้าของแก้
+    // บันทึกข้อความที่แก้แล้วเป็นเวอร์ชันใหม่ที่ "ผ่าน" พร้อมเอาไปลงได้ทันที
+    await db.insert(captionVersions).values({
+      captionId,
+      versionNumber: versionNumber + 1,
+      text: fixedText,
+      reviewResult: "approved",
+      reviewedAt: new Date(),
+    });
+  }
 
   await db
     .update(captions)
     .set({
       status: result,
-      ...(edited !== null ? { pendingDraftText: edited } : {}),
+      ...(fixedText !== null ? { pendingDraftText: fixedText } : {}),
       updatedAt: new Date(),
     })
     .where(

@@ -91,6 +91,9 @@ export function ReviewWorkspace({
     editDraft !== null ||
     noteDraft.trim() !== "";
 
+  // จุดที่หัวหน้าลงมือแก้ข้อความเอง (ไม่ใช่แค่คอมเมนต์) — กดผ่านแล้วจบงานได้เลย
+  const fixedCount = notes.filter((n) => n.suggestedText !== null).length;
+
   const error = changesState.error ?? approveState.error;
   const isPending = isApproving || isRequestingChanges;
 
@@ -568,7 +571,9 @@ export function ReviewWorkspace({
                 onClick={() => setConfirming("approve")}
                 disabled={isPending}
               >
-                ส่งผลตรวจ: ผ่าน
+                {fixedCount > 0
+                  ? `ผ่าน — แก้ให้แล้ว ${fixedCount} จุด`
+                  : "ส่งผลตรวจ: ผ่าน"}
               </Button>
             </div>
           )}
@@ -588,13 +593,17 @@ export function ReviewWorkspace({
               <p className="text-body-md font-semibold text-on-surface">
                 {confirming === "changes"
                   ? `ยืนยันส่ง “ขอแก้” พร้อมโน้ต ${notes.length} จุด?`
-                  : "ยืนยันส่ง “ผ่าน”?"}
+                  : fixedCount > 0
+                    ? `ยืนยันผ่าน พร้อมแก้ให้ ${fixedCount} จุด?`
+                    : "ยืนยันส่ง “ผ่าน”?"}
               </p>
               <p className="text-body-sm text-on-surface-variant">
                 {confirming === "changes"
                   ? "ชิ้นงานจะเปลี่ยนเป็นสถานะ “ขอแก้” และหายจากคิวรอตรวจ เพิ่มโน้ตอีกไม่ได้จนกว่าจะมีเวอร์ชันใหม่"
                   : notes.length > 0
-                    ? `ชิ้นงานจะผ่านทันที และโน้ต ${notes.length} จุดที่เพิ่มไว้จะถูกส่งไปพร้อมกัน`
+                    ? fixedCount > 0
+                      ? `ข้อความที่คุณแก้ ${fixedCount} จุด จะถูกบันทึกเป็นเวอร์ชันใหม่ที่ผ่านแล้ว พร้อมเอาไปลงได้เลย ไม่ต้องส่งกลับให้เจ้าของแก้อีก`
+                      : `ชิ้นงานจะผ่านทันที และโน้ต ${notes.length} จุดที่เพิ่มไว้จะถูกส่งไปพร้อมกัน`
                     : "ชิ้นงานจะเปลี่ยนเป็นสถานะ “ผ่าน” และหายจากคิวรอตรวจ"}
               </p>
 
