@@ -67,10 +67,9 @@ export function ReviewWorkspace({
   // รูปที่กำลังจะคอมเมนต์ — เลือกได้ทีละใบ พิมพ์โน้ตแล้วกดเพิ่มเหมือนคอมเมนต์ข้อความ
   const [pendingImage, setPendingImage] = useState<string | null>(null);
   const [noteDraft, setNoteDraft] = useState("");
-  // หัวหน้าเสนอข้อความแทนประโยคที่เลือกได้ เจ้าของจะได้กดใช้เลยไม่ต้องพิมพ์ตาม
-  // "replace" = พิมพ์ข้อความใหม่ให้, "remove" = ขอให้ตัดประโยคนี้ออก
-  const [suggestKind, setSuggestKind] = useState<"replace" | "remove" | null>(null);
-  const [suggestDraft, setSuggestDraft] = useState("");
+  // หัวหน้ากด "แก้ไขเลย" แล้วแก้ทับประโยคที่เลือกได้ เจ้าของจะได้กดใช้ทันทีไม่ต้องพิมพ์ตาม
+  // null = ยังไม่ได้กดแก้, "" = ลบข้อความออกหมด แปลว่าขอให้ตัดประโยคนี้ทิ้ง
+  const [editDraft, setEditDraft] = useState<string | null>(null);
   const [confirming, setConfirming] = useState<"approve" | "changes" | null>(null);
   // บนมือถือแผงตรวจลอยติดขอบล่าง เปิด/ปิดได้ จะได้ไม่บังเนื้อหาตอนอ่าน
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -83,6 +82,14 @@ export function ReviewWorkspace({
     if (i === -1) return "รูปที่ถูกเปลี่ยนไปแล้ว";
     return imageList.length > 1 ? `รูปที่ ${i + 1}` : "รูปประกอบ";
   }
+
+  // กำลังเขียนโน้ตอยู่ไหม — ระหว่างนี้ซ่อนปุ่มส่งผลตรวจ ให้จอเหลือเรื่องเดียว
+  // ไม่งั้นหัวหน้าจะไม่รู้ว่าต้องกดอะไรก่อน และเผลอกด "ผ่าน" ทั้งที่พิมพ์โน้ตค้างไว้
+  const isWritingNote =
+    pendingSelection !== null ||
+    pendingImage !== null ||
+    editDraft !== null ||
+    noteDraft.trim() !== "";
 
   const error = changesState.error ?? approveState.error;
   const isPending = isApproving || isRequestingChanges;
@@ -158,7 +165,12 @@ export function ReviewWorkspace({
   }
 
   function addNote() {
-    const noteText = noteDraft.trim();
+    const suggestion = suggestedTextForDraft();
+    // แก้ข้อความมาให้แล้วถือว่าสื่อสารครบ ไม่ต้องบังคับพิมพ์โน้ตอีก
+    // แต่ยังต้องมีข้อความกำกับ เจ้าของจะได้เห็นว่าหัวหน้าสั่งอะไร
+    const noteText =
+      noteDraft.trim() ||
+      (suggestion === null ? "" : suggestion === "" ? "ตัดประโยคนี้ออก" : "แก้เป็นข้อความนี้");
     if (!noteText) return;
     setNotes((prev) => [
       ...prev,
@@ -167,7 +179,7 @@ export function ReviewWorkspace({
         quotedText: pendingSelection,
         imageUrl: pendingImage,
         note: noteText,
-        suggestedText: suggestedTextForDraft(),
+        suggestedText: suggestion,
       },
     ]);
     setNoteDraft("");
@@ -180,17 +192,14 @@ export function ReviewWorkspace({
     window.getSelection()?.removeAllRanges();
   }
 
-  /** แปลงสิ่งที่หัวหน้ากรอกไว้เป็นค่าที่จะเก็บ ตามกติกา null / "" / ข้อความ */
+  /** แปลงสิ่งที่หัวหน้าแก้ไว้เป็นค่าที่จะเก็บ ตามกติกา null / "" / ข้อความ */
   function suggestedTextForDraft(): string | null {
-    if (!pendingSelection) return null;
-    if (suggestKind === "remove") return "";
-    if (suggestKind === "replace" && suggestDraft.trim()) return suggestDraft.trim();
-    return null;
+    if (!pendingSelection || editDraft === null) return null;
+    return editDraft.trim();
   }
 
   function clearSuggestion() {
-    setSuggestKind(null);
-    setSuggestDraft("");
+    setEditDraft(null);
   }
 
   function removeNote(clientId: string) {
@@ -393,9 +402,21 @@ export function ReviewWorkspace({
                 </button>
               </div>
             ) : (
-              <p className="text-label-sm text-on-surface-variant">
-                ยังไม่ได้เลือกข้อความหรือรูป — โน้ตนี้จะเป็นโน้ตรวม
-              </p>
+              <div className="flex items-start justify-between gap-space-sm">
+                <p className="text-label-sm text-on-surface-variant">
+                  ยังไม่ได้เลือกข้อความหรือรูป — โน้ตนี้จะเป็นโน้ตรวม
+                </p>
+                {/* ทางออกตอนพิมพ์โน้ตรวมค้างไว้ ไม่งั้นปุ่มส่งผลตรวจจะไม่กลับมา */}
+                {noteDraft.trim() !== "" && (
+                  <button
+                    type="button"
+                    onClick={() => setNoteDraft("")}
+                    className="shrink-0 text-label-sm text-on-surface-variant hover:text-error"
+                  >
+                    ล้างโน้ตนี้
+                  </button>
+                )}
+              </div>
             )}
             <Textarea
               value={noteDraft}
@@ -403,71 +424,57 @@ export function ReviewWorkspace({
               placeholder="พิมพ์สิ่งที่ต้องการให้แก้ไขตรงจุดนี้..."
               rows={2}
             />
-            {pendingSelection && (
-              <div className="flex flex-col gap-space-xs rounded-lg bg-surface-container-lowest p-space-sm">
-                {suggestKind === null ? (
-                  <>
-                    <p className="text-label-sm text-on-surface-variant">
-                      อยากให้เป็นแบบไหน? (ไม่ใส่ก็ได้)
-                    </p>
-                    <div className="flex flex-wrap gap-space-xs">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setSuggestKind("replace")}
-                      >
-                        เขียนข้อความใหม่ให้
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setSuggestKind("remove")}
-                      >
-                        ตัดประโยคนี้ออก
-                      </Button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex items-center justify-between gap-space-sm">
-                      <span className="text-label-sm font-semibold text-on-surface">
-                        {suggestKind === "remove"
-                          ? "ขอให้ตัดประโยคนี้ออก"
-                          : "ข้อความที่อยากให้เป็น"}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={clearSuggestion}
-                        className="shrink-0 text-label-sm text-on-surface-variant hover:text-error"
-                      >
-                        ไม่เอาแล้ว
-                      </button>
-                    </div>
-                    {suggestKind === "replace" && (
-                      <Textarea
-                        value={suggestDraft}
-                        onChange={(e) => setSuggestDraft(e.target.value)}
-                        placeholder="พิมพ์ข้อความที่อยากให้ใช้แทนประโยคนี้..."
-                        rows={2}
-                      />
-                    )}
-                    <p className="text-label-sm text-on-surface-variant">
-                      เจ้าของจะกดใช้ได้ทันที ไม่ต้องพิมพ์ตาม
-                    </p>
-                  </>
+            {editDraft !== null ? (
+              /* กด "แก้ไขเลย" แล้ว — เอาประโยคเดิมมาให้แก้ทับได้ทันที */
+              <div className="flex flex-col gap-space-xs rounded-lg bg-tertiary-fixed/30 p-space-sm">
+                <div className="flex items-center justify-between gap-space-sm">
+                  <span className="text-label-sm font-semibold text-on-surface">แก้เป็น</span>
+                  <button
+                    type="button"
+                    onClick={clearSuggestion}
+                    className="shrink-0 text-label-sm text-on-surface-variant hover:text-error"
+                  >
+                    ไม่แก้แล้ว
+                  </button>
+                </div>
+                <Textarea
+                  value={editDraft}
+                  onChange={(e) => setEditDraft(e.target.value)}
+                  rows={3}
+                />
+                <p className="text-label-sm text-on-surface-variant">
+                  ลบออกให้หมด = ตัดประโยคนี้ทิ้ง
+                </p>
+                <Button
+                  type="button"
+                  className="w-fit bg-tertiary text-on-tertiary hover:bg-tertiary/90"
+                  onClick={addNote}
+                >
+                  + เพิ่มการแก้
+                </Button>
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-space-xs">
+                <Button
+                  type="button"
+                  className="w-fit"
+                  onClick={addNote}
+                  disabled={!noteDraft.trim()}
+                >
+                  + เพิ่มโน้ต
+                </Button>
+                {/* แก้ทับได้เฉพาะโน้ตที่ชี้ประโยคไว้ รูปกับโน้ตรวมไม่มีข้อความให้แทน */}
+                {pendingSelection && (
+                  <Button
+                    type="button"
+                    className="w-fit bg-tertiary text-on-tertiary hover:bg-tertiary/90"
+                    onClick={() => setEditDraft(pendingSelection)}
+                  >
+                    + แก้ไขเลย
+                  </Button>
                 )}
               </div>
             )}
-            <Button
-              type="button"
-              className="w-fit"
-              onClick={addNote}
-              disabled={!noteDraft.trim()}
-            >
-              + เพิ่มโน้ตนี้
-            </Button>
           </div>
 
           {notes.length > 0 && (
@@ -525,7 +532,7 @@ export function ReviewWorkspace({
 
           {/* บอกให้ชัดตั้งแต่ก่อนกดว่า "ส่งแล้วจบรอบ" ไม่ใช่การสั่งแก้ทีละจุด
               แล้วยังมีขั้นยืนยันอีกชั้นกันกดพลาด (PRD 4.2) */}
-          {confirming === null && (
+          {confirming === null && !isWritingNote && (
             <div className="flex flex-col gap-space-sm sm:flex-row">
               {/* ยังเพิ่มโน้ตไม่ครบ ปุ่มขอแก้เป็นสีเทาไปก่อน จะได้ไม่ดึงให้กดทั้งที่ยังกดไม่ได้ */}
               <Button
@@ -557,7 +564,7 @@ export function ReviewWorkspace({
             </div>
           )}
 
-          {confirming === null && notes.length === 0 && (
+          {confirming === null && !isWritingNote && notes.length === 0 && (
             <p className="text-label-sm text-on-surface-variant">
               ยังไม่มีโน้ต — ถ้าจะขอแก้ ต้องเพิ่มโน้ตอย่างน้อย 1 จุดก่อน
             </p>
