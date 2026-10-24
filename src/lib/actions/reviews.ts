@@ -50,6 +50,30 @@ function parseNotes(raw: string): IncomingNote[] {
     .filter((n): n is IncomingNote => n !== null);
 }
 
+/**
+ * เอาข้อความที่หัวหน้าแก้มา ไปแทนในร่างของเจ้าของจริง ๆ
+ * คืน null ถ้าไม่มีอะไรเปลี่ยน จะได้ไม่ต้องเขียนทับฟรี ๆ
+ * ประโยคไหนหาไม่เจอในร่าง (เจ้าของแก้ไปก่อนแล้ว) ข้ามไป ไม่ไปทับของใหม่
+ */
+function applyEditsToDraft(draft: string, notes: IncomingNote[]): string | null {
+  let text = draft.replace(/\r\n/g, "\n");
+  let changed = false;
+
+  for (const n of notes) {
+    if (!n.quotedText || n.suggestedText === null) continue;
+    const quote = n.quotedText.replace(/\r\n/g, "\n").trim();
+    const start = text.indexOf(quote);
+    if (start === -1) continue;
+    // ตัดประโยคทิ้งต้องเก็บบรรทัดว่างไปด้วย ไม่งั้นแคปชันจะมีบรรทัดโหว่
+    const from =
+      n.suggestedText === "" && text[start - 1] === "\n" ? start - 1 : start;
+    text = text.slice(0, from) + n.suggestedText + text.slice(start + quote.length);
+    changed = true;
+  }
+
+  return changed ? text : null;
+}
+
 async function applyReview(
   formData: FormData,
   result: "approved" | "changes_requested"
@@ -114,9 +138,24 @@ async function applyReview(
     );
   }
 
+  // หัวหน้า "แก้ไขเลย" = แก้แคปชันตัวจริงให้เลย ไม่ใช่แค่เสนอไว้เฉย ๆ
+  // เขียนทับลงร่างที่เจ้าของกำลังแก้อยู่ เปิดหน้าแก้มาก็เห็นข้อความใหม่พร้อมใช้
+  // เวอร์ชันที่ส่งตรวจไปแล้วไม่ถูกแตะ ยังเป็นหลักฐานว่าตอนนั้นส่งอะไรไป
+  const edited = applyEditsToDraft(
+    (await db
+      .select({ draft: captions.pendingDraftText })
+      .from(captions)
+      .where(eq(captions.id, captionId)))[0]?.draft ?? "",
+    notes
+  );
+
   await db
     .update(captions)
-    .set({ status: result, updatedAt: new Date() })
+    .set({
+      status: result,
+      ...(edited !== null ? { pendingDraftText: edited } : {}),
+      updatedAt: new Date(),
+    })
     .where(
       and(eq(captions.id, captionId), eq(captions.status, "pending_review"))
     );

@@ -195,7 +195,10 @@ export function ReviewWorkspace({
   /** แปลงสิ่งที่หัวหน้าแก้ไว้เป็นค่าที่จะเก็บ ตามกติกา null / "" / ข้อความ */
   function suggestedTextForDraft(): string | null {
     if (!pendingSelection || editDraft === null) return null;
-    return editDraft.trim();
+    const edited = editDraft.trim();
+    // กดแก้ไขเลยแต่ไม่ได้แก้อะไร = ไม่มีอะไรต้องเปลี่ยน อย่าเก็บเป็นการแก้
+    if (edited === pendingSelection.trim()) return null;
+    return edited;
   }
 
   function clearSuggestion() {
@@ -447,11 +450,17 @@ export function ReviewWorkspace({
                 </p>
                 <Button
                   type="button"
-                  className="w-fit bg-tertiary text-on-tertiary hover:bg-tertiary/90"
+                  className="w-fit bg-tertiary text-on-tertiary hover:bg-tertiary/90 disabled:bg-outline-variant disabled:text-on-surface-variant"
                   onClick={addNote}
+                  disabled={suggestedTextForDraft() === null}
                 >
                   + เพิ่มการแก้
                 </Button>
+                {suggestedTextForDraft() === null && (
+                  <p className="text-label-sm text-on-surface-variant">
+                    ยังไม่ได้แก้อะไร — แก้ข้อความด้านบนก่อน
+                  </p>
+                )}
               </div>
             ) : (
               <div className="flex flex-wrap gap-space-xs">

@@ -248,7 +248,9 @@ export function CaptionHighlightEditor({
                     )}
                     {isGone && (
                       <span className="text-label-sm text-on-surface-variant">
-                        (แก้ข้อความตรงนี้ไปแล้ว)
+                        {note.suggestedText !== null
+                          ? "(หัวหน้าแก้ข้อความนี้ให้แล้ว)"
+                          : "(แก้ข้อความตรงนี้ไปแล้ว)"}
                       </span>
                     )}
                   </div>
