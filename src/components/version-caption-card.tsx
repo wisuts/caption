@@ -51,7 +51,11 @@ export function VersionCaptionCard({
           <span className="text-label-sm text-on-surface-variant">
             ส่งตรวจ {formatThaiDateTime(version.submittedAt)}
           </span>
-          <CopyCaptionButton text={version.text} />
+          {/* ให้ก๊อปได้เฉพาะเวอร์ชันที่ตรวจผ่านแล้ว เพราะมีแต่ตัวนั้นที่เอาไปโพสต์จริง
+              ร่างกับเวอร์ชันที่โดนสั่งแก้ไม่ต้องมีปุ่ม จะได้ไม่ก๊อปผิดตัว */}
+          {version.reviewResult === "approved" && (
+            <CopyCaptionButton text={version.text} />
+          )}
         </div>
       </div>
       <div className="rounded-lg bg-surface-container-low p-space-md text-body-md text-on-surface">

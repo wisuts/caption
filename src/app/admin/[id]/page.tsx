@@ -10,7 +10,6 @@ import { SubmitNewVersionButton } from "@/components/submit-new-version-button";
 import { MarkPublishedButton } from "@/components/mark-published-button";
 import { DeleteCaptionButton } from "@/components/delete-caption-button";
 import { CaptionImage } from "@/components/caption-image";
-import { CopyCaptionButton } from "@/components/copy-caption-button";
 import { getCaptionByIdDb } from "@/lib/db/queries";
 import { getLatestSubmittedVersion, hasUnsentEdit } from "@/lib/caption-helpers";
 import { formatThaiDate, formatThaiDateTime } from "@/lib/thai-date";
@@ -127,12 +126,9 @@ export default async function AdminItemDetailPage({
 
           {unsentEdit && (
             <section className="flex flex-col gap-space-md rounded-xl border border-amber-200 bg-amber-50/60 p-space-lg">
-              <div className="flex flex-wrap items-center justify-between gap-space-xs">
-                <h2 className="text-headline-sm text-on-surface">
-                  ข้อความที่แก้ค้างไว้ (ยังไม่ส่งตรวจ)
-                </h2>
-                <CopyCaptionButton text={caption.pendingDraftText} />
-              </div>
+              <h2 className="text-headline-sm text-on-surface">
+                ข้อความที่แก้ค้างไว้ (ยังไม่ส่งตรวจ)
+              </h2>
               <p className="whitespace-pre-line rounded-lg bg-surface-container-lowest p-space-lg text-body-lg text-on-surface">
                 {caption.pendingDraftText}
               </p>

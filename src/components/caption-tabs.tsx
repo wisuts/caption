@@ -49,6 +49,11 @@ export function CaptionTabs({
   const activeVersion =
     earlierVersions.find((v) => `v${v.versionNumber}` === activeTab) ?? null;
 
+  // ก๊อปได้เฉพาะข้อความที่ตรวจผ่านแล้ว — ที่ยังรอตรวจหรือโดนสั่งแก้ยังไม่ใช่ตัวจริง
+  const latestApproved =
+    versions.find((v) => v.versionNumber === versionNumber)?.reviewResult ===
+    "approved";
+
   const hint =
     activeTab === "diff"
       ? "เขียว = บรรทัดที่แก้มาใหม่ · ขีดฆ่าสีเทา = ของเดิมที่ถูกแทนที่"
@@ -80,7 +85,9 @@ export function CaptionTabs({
       </div>
       <div className="flex flex-wrap items-center justify-between gap-space-xs">
         <p className="text-label-sm text-on-surface-variant">{hint}</p>
-        {activeTab === "latest" && <CopyCaptionButton text={text} />}
+        {activeTab === "latest" && latestApproved && (
+          <CopyCaptionButton text={text} />
+        )}
       </div>
       <div
         ref={textRef}
