@@ -45,6 +45,18 @@ async function saveAsPendingVersion(captionId: string, text: string) {
   });
 }
 
+/**
+ * เพดานความยาวของแต่ละช่อง (PRD กฎข้อ 7)
+ * แคปชันจริงที่ยาวที่สุดเท่าที่เคยใช้คือ ~4,900 ตัวอักษร เผื่อไว้ 4 เท่าก็เหลือเฟือ
+ * มีไว้กันข้อมูลก้อนใหญ่ผิดปกติถูกยัดเข้าฐานข้อมูล ไม่ได้มีไว้จำกัดการทำงานจริง
+ */
+const LIMITS = {
+  title: 200,
+  authorName: 100,
+  captionText: 20000,
+  imageUrl: 2000,
+} as const;
+
 export type CaptionFormState = {
   errors: Partial<Record<"title" | "brand" | "channel" | "captionText", string>>;
 };
@@ -85,11 +97,34 @@ function readCommonFields(formData: FormData) {
  * ถ้าเป็นชิ้นใหม่สถานะเป็น "ร่าง" ถ้าชิ้นนั้น "รอตรวจ" อยู่แล้ว หัวหน้าจะยังเห็นข้อความเดิม
  * (การแก้ไม่สร้างเวอร์ชันใหม่ — เก็บไว้ที่ pendingDraftText เท่านั้น)
  */
+/** เช็กว่าช่องไหนยาวเกินเพดาน แล้วบอกเป็นภาษาคนว่าต้องตัดออกกี่ตัวอักษร */
+function tooLongErrors(
+  fields: ReturnType<typeof readCommonFields>
+): CaptionFormState["errors"] {
+  const errors: CaptionFormState["errors"] = {};
+  if (fields.title.length > LIMITS.title) {
+    errors.title = `หัวข้อยาวเกินไป ตัดออกอีก ${fields.title.length - LIMITS.title} ตัวอักษร`;
+  }
+  if (fields.captionText.length > LIMITS.captionText) {
+    errors.captionText = `แคปชันยาวเกินไป ตัดออกอีก ${fields.captionText.length - LIMITS.captionText} ตัวอักษร`;
+  }
+  if (fields.authorName.length > LIMITS.authorName) {
+    errors.title = "ชื่อคนเขียนยาวเกินไป";
+  }
+  if ((fields.imageUrl ?? "").length > LIMITS.imageUrl) {
+    errors.title = "ลิงก์รูปรวมกันยาวเกินไป ลองลดจำนวนรูปลง";
+  }
+  return errors;
+}
+
 export async function saveCaptionDraft(
   _prevState: CaptionFormState,
   formData: FormData
 ): Promise<CaptionFormState> {
   const fields = readCommonFields(formData);
+
+  const tooLong = tooLongErrors(fields);
+  if (Object.keys(tooLong).length > 0) return { errors: tooLong };
 
   if (fields.id) {
     await db
@@ -137,6 +172,7 @@ export async function submitCaptionForReview(
   if (!fields.title) errors.title = "กรุณากรอกหัวข้อสั้น";
   if (!fields.brand) errors.brand = "กรุณาเลือกแบรนด์อย่างน้อย 1 อัน";
   if (!fields.captionText) errors.captionText = "กรุณาพิมพ์ตัวแคปชัน";
+  Object.assign(errors, tooLongErrors(fields));
   if (Object.keys(errors).length > 0) {
     return { errors };
   }

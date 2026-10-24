@@ -6,6 +6,17 @@ import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { captions, captionVersions, reviewNotes } from "@/lib/db/schema";
 
+/**
+ * เพดานของฝั่งตรวจ — กันข้อมูลก้อนใหญ่ผิดปกติ ไม่ได้จำกัดการทำงานจริง
+ * โน้ตจริงยาวสุดที่เคยเขียนคือ ~130 ตัวอักษร และไม่เคยเกิน 5 จุดต่อรอบ
+ */
+const LIMITS = {
+  note: 2000,
+  quotedText: 20000,
+  notesPerRound: 50,
+  editedText: 20000,
+} as const;
+
 export type ReviewActionState = {
   error?: string;
 };
@@ -28,6 +39,7 @@ function parseNotes(raw: string): IncomingNote[] {
   if (!Array.isArray(parsed)) return [];
 
   return parsed
+    .slice(0, LIMITS.notesPerRound)
     .map((item) => {
       if (typeof item !== "object" || item === null) return null;
       const note = String((item as Record<string, unknown>).note ?? "").trim();
@@ -37,7 +49,8 @@ function parseNotes(raw: string): IncomingNote[] {
       const imageRaw = (item as Record<string, unknown>).imageUrl;
       const imageUrl =
         typeof imageRaw === "string" && imageRaw.trim() ? imageRaw.trim() : null;
-      if (!note) return null;
+      if (!note || note.length > LIMITS.note) return null;
+      if (quotedText && quotedText.length > LIMITS.quotedText) return null;
       return { quotedText, imageUrl, note };
     })
     .filter((n): n is IncomingNote => n !== null);
@@ -52,6 +65,12 @@ async function applyReview(
   const notes = parseNotes(String(formData.get("notesJson") ?? "[]"));
   // ข้อความที่หัวหน้าพิมพ์แก้เอง — ว่างแปลว่าไม่ได้แก้อะไร
   const editedText = String(formData.get("editedText") ?? "").replace(/\r\n/g, "\n");
+
+  if (editedText.length > LIMITS.editedText) {
+    return {
+      error: `ข้อความที่แก้ยาวเกินไป ตัดออกอีก ${editedText.length - LIMITS.editedText} ตัวอักษรก่อนส่ง`,
+    };
+  }
 
   // กด "ขอแก้" ต้องมีโน้ตอย่างน้อย 1 อัน (ชี้จุดหรือโน้ตรวมก็ได้) — PRD กฎข้อ 7
   if (result === "changes_requested" && notes.length === 0) {

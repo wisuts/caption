@@ -65,7 +65,17 @@ export async function getAllCaptionsDb(): Promise<Caption[]> {
   return rows.map((row) => toCaption(row, row.versions));
 }
 
+/**
+ * ไอดีชิ้นงานเป็นรหัสรูปแบบตายตัว (UUID)
+ * ถ้าลิงก์เพี้ยน เช่น ก๊อปไม่ครบหรือมีตัวอักษรเกิน ต้องรีบบอกว่า "ไม่พบ" ตั้งแต่ตรงนี้
+ * ไม่งั้นฐานข้อมูลจะโยน error ออกมาจนหน้าเว็บพังทั้งหน้า
+ */
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function getCaptionByIdDb(id: string): Promise<Caption | undefined> {
+  if (!UUID_PATTERN.test(id)) return undefined;
+
   const row = await db.query.captions.findFirst({
     where: and(eq(captions.id, id), eq(captions.isDeleted, false)),
     with: { versions: versionsWithNotes },
