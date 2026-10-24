@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/empty-state";
 import { SortSelect } from "@/components/sort-select";
 import { MarkPublishedButton } from "@/components/mark-published-button";
 import { DuplicateCaptionButton } from "@/components/duplicate-caption-button";
+import { BulkPublishBar } from "@/components/bulk-publish-bar";
 import { sortCaptions, type SortOrder } from "@/lib/sort-captions";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -38,6 +39,13 @@ export function AdminDashboardClient({ allCaptions }: { allCaptions: Caption[] }
   const [brand, setBrand] = useState<Brand | typeof ALL>(ALL);
   const [channel, setChannel] = useState<Channel | typeof ALL>(ALL);
   const [sort, setSort] = useState<SortOrder>("newest");
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  function toggleSelected(id: string) {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  }
 
   const counts = useMemo(() => {
     const base: Record<CaptionStatus, number> = {
@@ -60,6 +68,16 @@ export function AdminDashboardClient({ allCaptions }: { allCaptions: Caption[] }
     });
     return sortCaptions(filtered, sort);
   }, [allCaptions, status, brand, channel, sort]);
+
+  // นับเฉพาะชิ้นที่ยังเห็นอยู่ในรายการและยังเป็นสถานะ "ผ่าน" จริง ๆ
+  // เผื่อกรองรายการใหม่หรือสถานะเปลี่ยนไปแล้วหลังติ๊กไว้
+  const selected = useMemo(
+    () =>
+      items
+        .filter((c) => c.status === "approved" && selectedIds.includes(c.id))
+        .map((c) => c.id),
+    [items, selectedIds]
+  );
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-space-lg px-gutter-desktop py-space-xl">
@@ -168,31 +186,54 @@ export function AdminDashboardClient({ allCaptions }: { allCaptions: Caption[] }
       ) : items.length === 0 ? (
         <EmptyState title="ไม่เจองานที่ตรงกับตัวกรองนี้" />
       ) : (
-        <div className="flex flex-col gap-space-md">
-          {items.map((caption) => (
-            <CaptionRow
-              key={caption.id}
-              caption={caption}
-              href={`/admin/${caption.id}`}
-              action={
-                <div className="flex shrink-0 items-center gap-space-xs">
-                  {/* ชิ้นที่ผ่านแล้วมักค้างเพราะต้องเปิดเข้าไปถึงจะกด "ลงแล้ว" ได้
-                      ให้กดจากรายการเลย จะได้ไม่ลืม */}
-                  {caption.status === "approved" && (
-                    <MarkPublishedButton captionId={caption.id} compact />
-                  )}
-                  <DuplicateCaptionButton captionId={caption.id} compact />
-                  <Link
-                    href={`/admin/${caption.id}`}
-                    className={buttonVariants({ variant: "ghost" })}
-                  >
-                    จัดการ
-                  </Link>
-                </div>
-              }
+        <>
+          {selected.length > 0 && (
+            <BulkPublishBar
+              captionIds={selected}
+              onDone={() => setSelectedIds([])}
             />
-          ))}
-        </div>
+          )}
+
+          <div className="flex flex-col gap-space-md">
+            {items.map((caption) => (
+              <CaptionRow
+                key={caption.id}
+                caption={caption}
+                href={`/admin/${caption.id}`}
+                select={
+                  // ติ๊กได้เฉพาะชิ้นที่ "ผ่าน" เพราะมีแต่ชิ้นพวกนี้ที่กด "ลงแล้ว" ได้
+                  caption.status === "approved" ? (
+                    <label className="flex shrink-0 cursor-pointer items-center self-center p-1">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(caption.id)}
+                        onChange={() => toggleSelected(caption.id)}
+                        aria-label={`เลือก ${caption.title}`}
+                        className="size-4 accent-primary"
+                      />
+                    </label>
+                  ) : undefined
+                }
+                action={
+                  <div className="flex shrink-0 items-center gap-space-xs">
+                    {/* ชิ้นที่ผ่านแล้วมักค้างเพราะต้องเปิดเข้าไปถึงจะกด "ลงแล้ว" ได้
+                        ให้กดจากรายการเลย จะได้ไม่ลืม */}
+                    {caption.status === "approved" && (
+                      <MarkPublishedButton captionId={caption.id} compact />
+                    )}
+                    <DuplicateCaptionButton captionId={caption.id} compact />
+                    <Link
+                      href={`/admin/${caption.id}`}
+                      className={buttonVariants({ variant: "ghost" })}
+                    >
+                      จัดการ
+                    </Link>
+                  </div>
+                }
+              />
+            ))}
+          </div>
+        </>
       )}
     </main>
   );

@@ -12,16 +12,20 @@ export function CaptionRow({
   caption,
   href,
   action,
+  select,
 }: {
   caption: Caption;
   href: string;
   /** ปุ่มหรือของท้ายแถว เช่น "ตรวจงานนี้" */
   action?: ReactNode;
+  /** ช่องติ๊กหน้าแถว สำหรับเลือกหลายชิ้นพร้อมกัน */
+  select?: ReactNode;
 }) {
   const latestVersion = getLatestSubmittedVersion(caption);
 
   return (
     <div className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm transition-shadow hover:shadow-md sm:flex-row sm:items-center">
+      {select}
       <Link href={href} className="flex min-w-0 flex-1 items-start gap-space-md">
         <CaptionThumbnail imageUrl={caption.imageUrl} />
         <div className="flex min-w-0 flex-1 flex-col gap-space-xs">

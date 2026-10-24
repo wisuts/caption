@@ -26,6 +26,8 @@ export function MarkPublishedButton({
   return (
     <form action={formAction} className="flex flex-col gap-space-xs">
       <input type="hidden" name="captionId" value={captionId} />
+      {/* กดจากรายการให้อยู่หน้าเดิม ไม่เด้งเข้าไปในชิ้นงาน */}
+      {compact && <input type="hidden" name="stay" value="1" />}
       <Button
         type="submit"
         variant={compact ? "secondary" : "default"}

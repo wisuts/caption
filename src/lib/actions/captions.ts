@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { captions, captionVersions } from "@/lib/db/schema";
 import { CHANNELS, type Channel } from "@/lib/types";
@@ -244,8 +244,13 @@ export async function markCaptionPublished(
   _prevState: PublishState,
   formData: FormData
 ): Promise<PublishState> {
-  const captionId = String(formData.get("captionId") ?? "").trim();
-  if (!captionId) {
+  // กดได้ทีละหลายชิ้น — ส่ง captionId มาได้หลายค่าในครั้งเดียว
+  const captionIds = formData
+    .getAll("captionId")
+    .map((v) => String(v).trim())
+    .filter(Boolean);
+
+  if (captionIds.length === 0) {
     return { error: "ไม่พบข้อมูลชิ้นงาน กรุณารีเฟรชหน้านี้แล้วลองใหม่" };
   }
 
@@ -254,7 +259,7 @@ export async function markCaptionPublished(
     .set({ status: "published", updatedAt: new Date() })
     .where(
       and(
-        eq(captions.id, captionId),
+        inArray(captions.id, captionIds),
         eq(captions.isDeleted, false),
         eq(captions.status, "approved")
       )
@@ -266,9 +271,16 @@ export async function markCaptionPublished(
   }
 
   revalidatePath("/admin");
-  revalidatePath(`/admin/${captionId}`);
+  for (const id of captionIds) revalidatePath(`/admin/${id}`);
   revalidatePath("/archive");
-  redirect(`/admin/${captionId}`);
+
+  // กดจากรายการให้อยู่หน้าเดิม ไม่ต้องเด้งเข้าไปในชิ้นงาน
+  // (เด้งเข้าไปเฉพาะตอนกดจากในหน้ารายละเอียดของชิ้นนั้นเอง)
+  const stayHere = String(formData.get("stay") ?? "") === "1";
+  if (stayHere) {
+    return {};
+  }
+  redirect(`/admin/${captionIds[0]}`);
 }
 
 export type DeleteState = {

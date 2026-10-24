@@ -45,7 +45,7 @@ export function ReviewQueueClient({
           <p className="text-body-sm">
             {justReviewed.result === "approved"
               ? "ชิ้นงานย้ายไปอยู่ในคลังงานที่ผ่านแล้ว"
-              : "ชิ้นงานย้ายไปอยู่ในรายการ “รอเจ้าของแก้” ด้านล่าง รอเจ้าของแก้แล้วส่งกลับมา"}
+              : "ชิ้นงานย้ายไปอยู่ในรายการ “ตรวจแล้ว รอแก้กลับมา” ด้านล่าง"}
           </p>
         </div>
       )}
@@ -92,7 +92,7 @@ export function ReviewQueueClient({
         <section className="flex flex-col gap-space-md border-t border-surface-container-high pt-space-lg">
           <div className="flex flex-col gap-space-xs">
             <h2 className="text-headline-lg text-on-surface-variant">
-              ส่งกลับให้แก้แล้ว — รอเจ้าของ ({waiting.length})
+              ตรวจแล้ว รอแก้กลับมา ({waiting.length})
             </h2>
             <p className="text-body-sm text-on-surface-variant">
               ไม่ต้องทำอะไรต่อ กดเข้าไปดูได้ว่ารอบที่แล้วสั่งแก้อะไรไว้
