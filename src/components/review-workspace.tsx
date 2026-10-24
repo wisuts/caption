@@ -9,6 +9,7 @@ import { orderNotesByPosition } from "@/lib/order-notes-by-position";
 import { getPreviousRoundNotes } from "@/lib/previous-round-status";
 import { parseImageUrls } from "@/lib/image-url";
 import { CaptionImage } from "@/components/caption-image";
+import { CaptionDiffView } from "@/components/caption-diff-view";
 import type { CaptionVersion, ReviewNote } from "@/lib/types";
 import {
   approveCaption,
@@ -67,9 +68,11 @@ export function ReviewWorkspace({
   // รูปที่กำลังจะคอมเมนต์ — เลือกได้ทีละใบ พิมพ์โน้ตแล้วกดเพิ่มเหมือนคอมเมนต์ข้อความ
   const [pendingImage, setPendingImage] = useState<string | null>(null);
   const [noteDraft, setNoteDraft] = useState("");
-  // หัวหน้ากด "แก้ไขเลย" แล้วแก้ทับประโยคที่เลือกได้ เจ้าของจะได้กดใช้ทันทีไม่ต้องพิมพ์ตาม
-  // null = ยังไม่ได้กดแก้, "" = ลบข้อความออกหมด แปลว่าขอให้ตัดประโยคนี้ทิ้ง
-  const [editDraft, setEditDraft] = useState<string | null>(null);
+  // หัวหน้าพิมพ์แก้แคปชันเองได้ทั้งก้อน เหมือนพิมพ์ในเอกสาร
+  // แยกขาดจากการคอมเมนต์ จะได้ไม่งงว่าอันไหนเมนต์ อันไหนแก้เอง
+  const [editing, setEditing] = useState(false);
+  const [editedText, setEditedText] = useState(() => text.replace(/\r\n/g, "\n"));
+  const originalText = text.replace(/\r\n/g, "\n");
   const [confirming, setConfirming] = useState<"approve" | "changes" | null>(null);
   // บนมือถือแผงตรวจลอยติดขอบล่าง เปิด/ปิดได้ จะได้ไม่บังเนื้อหาตอนอ่าน
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -86,13 +89,13 @@ export function ReviewWorkspace({
   // กำลังเขียนโน้ตอยู่ไหม — ระหว่างนี้ซ่อนปุ่มส่งผลตรวจ ให้จอเหลือเรื่องเดียว
   // ไม่งั้นหัวหน้าจะไม่รู้ว่าต้องกดอะไรก่อน และเผลอกด "ผ่าน" ทั้งที่พิมพ์โน้ตค้างไว้
   const isWritingNote =
+    editing ||
     pendingSelection !== null ||
     pendingImage !== null ||
-    editDraft !== null ||
     noteDraft.trim() !== "";
 
-  // จุดที่หัวหน้าลงมือแก้ข้อความเอง (ไม่ใช่แค่คอมเมนต์) — กดผ่านแล้วจบงานได้เลย
-  const fixedCount = notes.filter((n) => n.suggestedText !== null).length;
+  // หัวหน้าพิมพ์แก้เองไว้ไหม — ถ้าแก้แล้วกดผ่าน จบงานได้เลยไม่ต้องเด้งกลับหาเจ้าของ
+  const hasReviewerEdit = editedText.trim() !== originalText.trim();
 
   const error = changesState.error ?? approveState.error;
   const isPending = isApproving || isRequestingChanges;
@@ -101,7 +104,6 @@ export function ReviewWorkspace({
   function startImageComment(url: string) {
     setPendingImage(url);
     setPendingSelection(null);
-    clearSuggestion();
     setSheetOpen(true);
     window.getSelection()?.removeAllRanges();
   }
@@ -143,8 +145,7 @@ export function ReviewWorkspace({
     if (line) {
       setPendingSelection(line);
       setPendingImage(null);
-      clearSuggestion();
-      setSheetOpen(true);
+        setSheetOpen(true);
     }
   }
 
@@ -162,18 +163,12 @@ export function ReviewWorkspace({
     ) {
       setPendingSelection(selectedText);
       setPendingImage(null);
-      clearSuggestion();
-      setSheetOpen(true);
+        setSheetOpen(true);
     }
   }
 
   function addNote() {
-    const suggestion = suggestedTextForDraft();
-    // แก้ข้อความมาให้แล้วถือว่าสื่อสารครบ ไม่ต้องบังคับพิมพ์โน้ตอีก
-    // แต่ยังต้องมีข้อความกำกับ เจ้าของจะได้เห็นว่าหัวหน้าสั่งอะไร
-    const noteText =
-      noteDraft.trim() ||
-      (suggestion === null ? "" : suggestion === "" ? "ตัดประโยคนี้ออก" : "แก้เป็นข้อความนี้");
+    const noteText = noteDraft.trim();
     if (!noteText) return;
     setNotes((prev) => [
       ...prev,
@@ -182,30 +177,16 @@ export function ReviewWorkspace({
         quotedText: pendingSelection,
         imageUrl: pendingImage,
         note: noteText,
-        suggestedText: suggestion,
+        suggestedText: null,
       },
     ]);
     setNoteDraft("");
-    clearSuggestion();
     setPendingSelection(null);
     setPendingImage(null);
     // บนมือถือแผงนี้บังแคปชันเกือบทั้งจอ ปิดให้เองหลังเพิ่มโน้ตเสร็จ
     // ไม่งั้นจะแตะเลือกประโยคถัดไปไม่ได้
     setSheetOpen(false);
     window.getSelection()?.removeAllRanges();
-  }
-
-  /** แปลงสิ่งที่หัวหน้าแก้ไว้เป็นค่าที่จะเก็บ ตามกติกา null / "" / ข้อความ */
-  function suggestedTextForDraft(): string | null {
-    if (!pendingSelection || editDraft === null) return null;
-    const edited = editDraft.trim();
-    // กดแก้ไขเลยแต่ไม่ได้แก้อะไร = ไม่มีอะไรต้องเปลี่ยน อย่าเก็บเป็นการแก้
-    if (edited === pendingSelection.trim()) return null;
-    return edited;
-  }
-
-  function clearSuggestion() {
-    setEditDraft(null);
   }
 
   function removeNote(clientId: string) {
@@ -287,10 +268,54 @@ export function ReviewWorkspace({
           previousText={previousText}
           marks={marks}
           textRef={textRef}
-          onMouseUp={handleMouseUp}
-          onPointerUp={handlePointerUp}
-          selectable
+          onMouseUp={editing ? undefined : handleMouseUp}
+          onPointerUp={editing ? undefined : handlePointerUp}
+          selectable={!editing}
+          editing={editing}
+          editedText={editedText}
+          onEditedTextChange={setEditedText}
+          editControl={
+            <Button
+              type="button"
+              size="sm"
+              className={
+                editing
+                  ? "bg-tertiary text-on-tertiary hover:bg-tertiary/90"
+                  : "bg-surface-container-high text-on-surface hover:bg-surface-container-highest"
+              }
+              onClick={() => {
+                setEditing((v) => !v);
+                setPendingSelection(null);
+                setPendingImage(null);
+                window.getSelection()?.removeAllRanges();
+              }}
+            >
+              {editing ? "พิมพ์เสร็จแล้ว" : "แก้เอง"}
+            </Button>
+          }
         />
+
+        {/* สรุปให้ดูก่อนส่งว่าหัวหน้าแก้อะไรไปบ้าง กันแก้แล้วลืมว่าแก้อะไร */}
+        {hasReviewerEdit && !editing && (
+          <section className="flex flex-col gap-space-sm rounded-xl bg-tertiary-fixed/30 p-space-lg">
+            <div className="flex flex-wrap items-center justify-between gap-space-sm">
+              <h2 className="text-headline-sm text-on-surface">คุณแก้ข้อความเองไว้</h2>
+              <button
+                type="button"
+                onClick={() => setEditedText(originalText)}
+                className="text-label-sm text-on-surface-variant hover:text-error"
+              >
+                ยกเลิกที่แก้ไว้ทั้งหมด
+              </button>
+            </div>
+            <p className="text-label-sm text-on-surface-variant">
+              เขียว = ที่คุณแก้ใหม่ · ขีดฆ่า = ของเดิมที่หายไป
+            </p>
+            <div className="rounded-lg bg-surface-container-lowest p-space-md text-body-md">
+              <CaptionDiffView previousText={originalText} currentText={editedText} />
+            </div>
+          </section>
+        )}
       </div>
 
       {/* ติดหน้าจอไว้ทางขวา (เฉพาะจอกว้าง) เหลือเฉพาะเรื่อง "ตรวจงาน" ล้วน ๆ
@@ -387,8 +412,7 @@ export function ReviewWorkspace({
                   type="button"
                   onClick={() => {
                     setPendingSelection(null);
-                    clearSuggestion();
-                  }}
+                                  }}
                   className="shrink-0 text-label-sm text-on-surface-variant hover:text-error"
                 >
                   ยกเลิกจุดนี้
@@ -430,63 +454,14 @@ export function ReviewWorkspace({
               placeholder="พิมพ์สิ่งที่ต้องการให้แก้ไขตรงจุดนี้..."
               rows={2}
             />
-            {editDraft !== null ? (
-              /* กด "แก้ไขเลย" แล้ว — เอาประโยคเดิมมาให้แก้ทับได้ทันที */
-              <div className="flex flex-col gap-space-xs rounded-lg bg-tertiary-fixed/30 p-space-sm">
-                <div className="flex items-center justify-between gap-space-sm">
-                  <span className="text-label-sm font-semibold text-on-surface">แก้เป็น</span>
-                  <button
-                    type="button"
-                    onClick={clearSuggestion}
-                    className="shrink-0 text-label-sm text-on-surface-variant hover:text-error"
-                  >
-                    ไม่แก้แล้ว
-                  </button>
-                </div>
-                <Textarea
-                  value={editDraft}
-                  onChange={(e) => setEditDraft(e.target.value)}
-                  rows={3}
-                />
-                <p className="text-label-sm text-on-surface-variant">
-                  ลบออกให้หมด = ตัดประโยคนี้ทิ้ง
-                </p>
-                <Button
-                  type="button"
-                  className="w-fit bg-tertiary text-on-tertiary hover:bg-tertiary/90 disabled:bg-outline-variant disabled:text-on-surface-variant"
-                  onClick={addNote}
-                  disabled={suggestedTextForDraft() === null}
-                >
-                  + เพิ่มการแก้
-                </Button>
-                {suggestedTextForDraft() === null && (
-                  <p className="text-label-sm text-on-surface-variant">
-                    ยังไม่ได้แก้อะไร — แก้ข้อความด้านบนก่อน
-                  </p>
-                )}
-              </div>
-            ) : (
-              <div className="flex flex-wrap gap-space-xs">
-                <Button
-                  type="button"
-                  className="w-fit"
-                  onClick={addNote}
-                  disabled={!noteDraft.trim()}
-                >
-                  + เพิ่มโน้ต
-                </Button>
-                {/* แก้ทับได้เฉพาะโน้ตที่ชี้ประโยคไว้ รูปกับโน้ตรวมไม่มีข้อความให้แทน */}
-                {pendingSelection && (
-                  <Button
-                    type="button"
-                    className="w-fit bg-tertiary text-on-tertiary hover:bg-tertiary/90"
-                    onClick={() => setEditDraft(pendingSelection)}
-                  >
-                    + แก้ไขเลย
-                  </Button>
-                )}
-              </div>
-            )}
+            <Button
+              type="button"
+              className="w-fit"
+              onClick={addNote}
+              disabled={!noteDraft.trim()}
+            >
+              + เพิ่มโน้ต
+            </Button>
           </div>
 
           {notes.length > 0 && (
@@ -551,12 +526,12 @@ export function ReviewWorkspace({
                 type="button"
                 variant="destructive"
                 className={`flex-1 ${
-                  notes.length === 0
+                  notes.length === 0 && !hasReviewerEdit
                     ? "bg-outline-variant text-on-surface-variant"
                     : ""
                 }`}
                 onClick={() => setConfirming("changes")}
-                disabled={isPending || notes.length === 0}
+                disabled={isPending || (notes.length === 0 && !hasReviewerEdit)}
                 title={
                   notes.length === 0
                     ? "เพิ่มโน้ตอย่างน้อย 1 อันก่อนถึงจะกดขอแก้ได้"
@@ -571,9 +546,7 @@ export function ReviewWorkspace({
                 onClick={() => setConfirming("approve")}
                 disabled={isPending}
               >
-                {fixedCount > 0
-                  ? `ผ่าน — แก้ให้แล้ว ${fixedCount} จุด`
-                  : "ส่งผลตรวจ: ผ่าน"}
+                {hasReviewerEdit ? "ผ่าน — ใช้ที่ผมแก้เอง" : "ส่งผลตรวจ: ผ่าน"}
               </Button>
             </div>
           )}
@@ -589,20 +562,26 @@ export function ReviewWorkspace({
               <input type="hidden" name="captionId" value={captionId} />
               <input type="hidden" name="versionNumber" value={versionNumber} />
               <input type="hidden" name="notesJson" value={notesJson} readOnly />
+              <input
+                type="hidden"
+                name="editedText"
+                value={hasReviewerEdit ? editedText : ""}
+                readOnly
+              />
 
               <p className="text-body-md font-semibold text-on-surface">
                 {confirming === "changes"
                   ? `ยืนยันส่ง “ขอแก้” พร้อมโน้ต ${notes.length} จุด?`
-                  : fixedCount > 0
-                    ? `ยืนยันผ่าน พร้อมแก้ให้ ${fixedCount} จุด?`
+                  : hasReviewerEdit
+                    ? "ยืนยันผ่าน ด้วยข้อความที่คุณแก้เอง?"
                     : "ยืนยันส่ง “ผ่าน”?"}
               </p>
               <p className="text-body-sm text-on-surface-variant">
                 {confirming === "changes"
                   ? "ชิ้นงานจะเปลี่ยนเป็นสถานะ “ขอแก้” และหายจากคิวรอตรวจ เพิ่มโน้ตอีกไม่ได้จนกว่าจะมีเวอร์ชันใหม่"
                   : notes.length > 0
-                    ? fixedCount > 0
-                      ? `ข้อความที่คุณแก้ ${fixedCount} จุด จะถูกบันทึกเป็นเวอร์ชันใหม่ที่ผ่านแล้ว พร้อมเอาไปลงได้เลย ไม่ต้องส่งกลับให้เจ้าของแก้อีก`
+                    ? hasReviewerEdit
+                      ? "ข้อความที่คุณแก้จะถูกบันทึกเป็นเวอร์ชันใหม่ที่ผ่านแล้ว พร้อมเอาไปลงได้เลย ไม่ต้องส่งกลับให้เจ้าของแก้อีก"
                       : `ชิ้นงานจะผ่านทันที และโน้ต ${notes.length} จุดที่เพิ่มไว้จะถูกส่งไปพร้อมกัน`
                     : "ชิ้นงานจะเปลี่ยนเป็นสถานะ “ผ่าน” และหายจากคิวรอตรวจ"}
               </p>

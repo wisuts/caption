@@ -58,6 +58,8 @@ export interface CaptionVersion {
   reviewResult: ReviewResult;
   /** โน้ตของคนตรวจ (มีได้หลายอันต่อเวอร์ชัน) */
   notes: ReviewNote[];
+  /** true = หัวหน้าพิมพ์แก้เวอร์ชันนี้เอง ไม่ได้มาจากเจ้าของ */
+  editedByReviewer: boolean;
   /** วันเวลาที่ตรวจ (ISO string) — ไม่มีถ้ายังไม่ตรวจ */
   reviewedAt: string | null;
 }

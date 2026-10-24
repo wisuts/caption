@@ -34,6 +34,7 @@ function toCaption(row: CaptionRow, versionRows: CaptionVersionRow[]): Caption {
         text: v.text,
         submittedAt: v.submittedAt.toISOString(),
         reviewResult: v.reviewResult,
+        editedByReviewer: v.editedByReviewer,
         notes,
         reviewedAt: v.reviewedAt ? v.reviewedAt.toISOString() : null,
       };

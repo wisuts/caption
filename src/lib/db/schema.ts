@@ -71,6 +71,9 @@ export const captionVersions = pgTable("caption_versions", {
     .notNull()
     .defaultNow(),
   reviewResult: reviewResultEnum("review_result").notNull().default("pending"),
+  // true = เวอร์ชันนี้หัวหน้าพิมพ์แก้เอง ไม่ได้มาจากเจ้าของ
+  // เก็บไว้เพื่อติดป้ายและเทียบให้ดูว่าหัวหน้าแก้อะไรไปบ้าง จะได้เรียนรู้
+  editedByReviewer: boolean("edited_by_reviewer").notNull().default(false),
   // ไม่เก็บชื่อคนตรวจ ตาม PRD หัวข้อ 6
   reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
 });

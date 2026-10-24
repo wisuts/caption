@@ -50,30 +50,6 @@ function parseNotes(raw: string): IncomingNote[] {
     .filter((n): n is IncomingNote => n !== null);
 }
 
-/**
- * เอาข้อความที่หัวหน้าแก้มา ไปแทนในร่างของเจ้าของจริง ๆ
- * คืน null ถ้าไม่มีอะไรเปลี่ยน จะได้ไม่ต้องเขียนทับฟรี ๆ
- * ประโยคไหนหาไม่เจอในร่าง (เจ้าของแก้ไปก่อนแล้ว) ข้ามไป ไม่ไปทับของใหม่
- */
-function applyEditsToDraft(draft: string, notes: IncomingNote[]): string | null {
-  let text = draft.replace(/\r\n/g, "\n");
-  let changed = false;
-
-  for (const n of notes) {
-    if (!n.quotedText || n.suggestedText === null) continue;
-    const quote = n.quotedText.replace(/\r\n/g, "\n").trim();
-    const start = text.indexOf(quote);
-    if (start === -1) continue;
-    // ตัดประโยคทิ้งต้องเก็บบรรทัดว่างไปด้วย ไม่งั้นแคปชันจะมีบรรทัดโหว่
-    const from =
-      n.suggestedText === "" && text[start - 1] === "\n" ? start - 1 : start;
-    text = text.slice(0, from) + n.suggestedText + text.slice(start + quote.length);
-    changed = true;
-  }
-
-  return changed ? text : null;
-}
-
 async function applyReview(
   formData: FormData,
   result: "approved" | "changes_requested"
@@ -81,6 +57,8 @@ async function applyReview(
   const captionId = String(formData.get("captionId") ?? "").trim();
   const versionNumber = Number(formData.get("versionNumber"));
   const notes = parseNotes(String(formData.get("notesJson") ?? "[]"));
+  // ข้อความที่หัวหน้าพิมพ์แก้เอง — ว่างแปลว่าไม่ได้แก้อะไร
+  const editedText = String(formData.get("editedText") ?? "").replace(/\r\n/g, "\n");
 
   // กด "ขอแก้" ต้องมีโน้ตอย่างน้อย 1 อัน (ชี้จุดหรือโน้ตรวมก็ได้) — PRD กฎข้อ 7
   if (result === "changes_requested" && notes.length === 0) {
@@ -126,10 +104,34 @@ async function applyReview(
 
   const { id: versionId, text: reviewedText } = updatedVersion[0];
 
+  // หัวหน้าพิมพ์แก้เอง → เก็บเป็นเวอร์ชันใหม่ติดป้ายไว้ว่าเป็นฝีมือหัวหน้า
+  // เวอร์ชันเดิมของเจ้าของไม่ถูกแตะ จะได้เทียบกันดูได้ว่าหัวหน้าแก้อะไรไปบ้าง
+  const reviewerEdited =
+    editedText.trim() !== "" &&
+    editedText.trim() !== reviewedText.replace(/\r\n/g, "\n").trim();
+
+  let notesVersionId = versionId;
+
+  if (reviewerEdited) {
+    const [created] = await db
+      .insert(captionVersions)
+      .values({
+        captionId,
+        versionNumber: versionNumber + 1,
+        text: editedText,
+        reviewResult: result,
+        reviewedAt: new Date(),
+        editedByReviewer: true,
+      })
+      .returning({ id: captionVersions.id });
+    // โน้ตเกาะเวอร์ชันของหัวหน้า เจ้าของจะได้เห็นคอมเมนต์คู่กับข้อความล่าสุดจริง ๆ
+    notesVersionId = created.id;
+  }
+
   if (notes.length > 0) {
     await db.insert(reviewNotes).values(
       notes.map((n) => ({
-        versionId,
+        versionId: notesVersionId,
         quotedText: n.quotedText,
         imageUrl: n.imageUrl,
         note: n.note,
@@ -138,27 +140,12 @@ async function applyReview(
     );
   }
 
-  // หัวหน้า "แก้ไขเลย" = แก้แคปชันตัวจริงให้เลย ไม่ใช่แค่เสนอไว้เฉย ๆ
-  // เวอร์ชันที่ส่งตรวจไปแล้วไม่ถูกแตะ ยังเป็นหลักฐานว่าตอนนั้นส่งอะไรไป
-  const fixedText = applyEditsToDraft(reviewedText, notes);
-
-  if (result === "approved" && fixedText !== null) {
-    // หัวหน้าแก้เองแล้วกดผ่าน = จบงานตรงนี้เลย ไม่ต้องเด้งกลับไปให้เจ้าของแก้
-    // บันทึกข้อความที่แก้แล้วเป็นเวอร์ชันใหม่ที่ "ผ่าน" พร้อมเอาไปลงได้ทันที
-    await db.insert(captionVersions).values({
-      captionId,
-      versionNumber: versionNumber + 1,
-      text: fixedText,
-      reviewResult: "approved",
-      reviewedAt: new Date(),
-    });
-  }
-
   await db
     .update(captions)
     .set({
       status: result,
-      ...(fixedText !== null ? { pendingDraftText: fixedText } : {}),
+      // ร่างของเจ้าของต้องตามข้อความที่หัวหน้าแก้ด้วย จะได้แก้ต่อจากของใหม่
+      ...(reviewerEdited ? { pendingDraftText: editedText } : {}),
       updatedAt: new Date(),
     })
     .where(

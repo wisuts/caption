@@ -23,6 +23,10 @@ export function CaptionTabs({
   onMouseUp,
   onPointerUp,
   selectable = false,
+  editing = false,
+  editedText,
+  onEditedTextChange,
+  editControl,
 }: {
   versionNumber: number;
   text: string;
@@ -34,6 +38,12 @@ export function CaptionTabs({
   onPointerUp?: (e: React.PointerEvent<HTMLDivElement>) => void;
   /** true เมื่อหน้านี้ลากคลุมข้อความเพื่อสั่งแก้ได้ */
   selectable?: boolean;
+  /** true = หัวหน้ากำลังพิมพ์แก้แคปชันเอง แท็บเวอร์ชันล่าสุดจะกลายเป็นช่องพิมพ์ */
+  editing?: boolean;
+  editedText?: string;
+  onEditedTextChange?: (value: string) => void;
+  /** ปุ่ม "แก้เอง / เสร็จแล้ว" วางไว้แถวเดียวกับคำอธิบาย */
+  editControl?: React.ReactNode;
 }) {
   const [activeTab, setActiveTab] = useState("latest");
 
@@ -59,6 +69,8 @@ export function CaptionTabs({
   const hint =
     activeTab === "diff"
       ? "เขียว = บรรทัดที่แก้มาใหม่ · ขีดฆ่าสีเทา = ของเดิมที่ถูกแทนที่"
+      : editing && activeTab === "latest"
+        ? "พิมพ์แก้ได้เลยเหมือนพิมพ์ในเอกสาร แก้ตรงไหนก็ได้"
       : activeTab !== "latest"
         ? selectable
           ? "เวอร์ชันเก่า อ่านอย่างเดียว — สลับกลับไปแท็บเวอร์ชันล่าสุดเพื่อคลุมข้อความสั่งแก้"
@@ -87,9 +99,12 @@ export function CaptionTabs({
       </div>
       <div className="flex flex-wrap items-center justify-between gap-space-xs">
         <p className="text-label-sm text-on-surface-variant">{hint}</p>
-        {activeTab === "latest" && latestApproved && (
-          <CopyCaptionButton text={text} />
-        )}
+        <div className="flex items-center gap-space-sm">
+          {activeTab === "latest" && editControl}
+          {activeTab === "latest" && latestApproved && (
+            <CopyCaptionButton text={text} />
+          )}
+        </div>
       </div>
       <div
         ref={textRef}
@@ -97,13 +112,30 @@ export function CaptionTabs({
         onPointerUp={activeTab === "latest" ? onPointerUp : undefined}
         className="select-text rounded-lg bg-surface-container-low/40 p-space-lg text-body-lg text-on-surface"
       >
-        {activeTab === "latest" && (
-          <HighlightedCaptionText text={text} marks={marks} />
-        )}
+        {activeTab === "latest" &&
+          (editing ? (
+            <textarea
+              value={editedText ?? text}
+              onChange={(e) => onEditedTextChange?.(e.target.value)}
+              rows={18}
+              className="w-full resize-y rounded-lg border-2 border-tertiary bg-surface-container-lowest p-space-md text-body-lg text-on-surface outline-none"
+            />
+          ) : (
+            <HighlightedCaptionText text={text} marks={marks} />
+          ))}
         {activeTab === "diff" && previousText && (
           <CaptionDiffView previousText={previousText} currentText={text} />
         )}
-        {activeVersion && <VersionCaptionCard version={activeVersion} />}
+        {activeVersion && (
+          <VersionCaptionCard
+            version={activeVersion}
+            previousText={
+              versions.find(
+                (v) => v.versionNumber === activeVersion.versionNumber - 1
+              )?.text
+            }
+          />
+        )}
       </div>
     </section>
   );

@@ -22,7 +22,14 @@ export function VersionTimeline({ versions }: { versions: CaptionVersion[] }) {
               DOT_STYLE[version.reviewResult]
             )}
           />
-          <VersionCaptionCard version={version} />
+          <VersionCaptionCard
+            version={version}
+            previousText={
+              versions.find(
+                (v) => v.versionNumber === version.versionNumber - 1
+              )?.text
+            }
+          />
         </div>
       ))}
     </div>

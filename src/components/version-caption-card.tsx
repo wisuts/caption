@@ -4,6 +4,7 @@ import { formatThaiDateTime } from "@/lib/thai-date";
 import { HighlightedCaptionText } from "@/components/highlighted-caption-text";
 import { CopyCaptionButton } from "@/components/copy-caption-button";
 import { orderNotesByPosition } from "@/lib/order-notes-by-position";
+import { CaptionDiffView } from "@/components/caption-diff-view";
 
 const RESULT_LABEL: Record<CaptionVersion["reviewResult"], string> = {
   pending: "รอตรวจ",
@@ -24,10 +25,13 @@ const RESULT_STYLE: Record<CaptionVersion["reviewResult"], string> = {
 export function VersionCaptionCard({
   version,
   headingOverride,
+  previousText,
 }: {
   version: CaptionVersion;
   /** ใช้แทนหัวข้อ "เวอร์ชัน N" เริ่มต้น เช่น "ข้อความที่หัวหน้าเห็นอยู่ตอนนี้" */
   headingOverride?: string;
+  /** ข้อความเวอร์ชันก่อนหน้า — ใช้เทียบให้ดูตอนหัวหน้าแก้เอง */
+  previousText?: string;
 }) {
   const orderedNotes = orderNotesByPosition(version.text, version.notes);
 
@@ -46,6 +50,11 @@ export function VersionCaptionCard({
           >
             {RESULT_LABEL[version.reviewResult]}
           </span>
+          {version.editedByReviewer && (
+            <span className="rounded bg-tertiary-fixed px-2 py-0.5 text-label-sm font-semibold text-on-tertiary-fixed">
+              หัวหน้าแก้เอง
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-space-sm">
           <span className="text-label-sm text-on-surface-variant">
@@ -69,6 +78,21 @@ export function VersionCaptionCard({
             }))}
         />
       </div>
+      {/* หัวหน้าแก้เอง — โชว์ให้เห็นเลยว่าต่างจากที่เราส่งไปตรงไหน จะได้เรียนรู้ */}
+      {version.editedByReviewer && previousText && (
+        <div className="flex flex-col gap-space-xs rounded-lg bg-tertiary-fixed/30 p-space-md">
+          <p className="text-label-sm font-semibold text-on-surface">
+            หัวหน้าแก้จากของเดิมตรงนี้
+          </p>
+          <p className="text-label-sm text-on-surface-variant">
+            เขียว = ที่หัวหน้าแก้ใหม่ · ขีดฆ่า = ของเดิมที่หายไป
+          </p>
+          <div className="rounded-lg bg-surface-container-lowest p-space-md text-body-sm">
+            <CaptionDiffView previousText={previousText} currentText={version.text} />
+          </div>
+        </div>
+      )}
+
       {version.notes.length > 0 && (
         <div className="flex flex-col gap-space-sm rounded-lg bg-error-container/40 p-space-md text-body-sm text-on-surface">
           <p className="font-semibold text-on-error-container">

@@ -1,0 +1,1 @@
+ALTER TABLE "caption_versions" ADD COLUMN "edited_by_reviewer" boolean DEFAULT false NOT NULL;
