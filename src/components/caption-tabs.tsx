@@ -21,6 +21,7 @@ export function CaptionTabs({
   marks = [],
   textRef,
   onMouseUp,
+  onPointerUp,
   selectable = false,
 }: {
   versionNumber: number;
@@ -30,6 +31,7 @@ export function CaptionTabs({
   marks?: HighlightMark[];
   textRef?: RefObject<HTMLDivElement | null>;
   onMouseUp?: () => void;
+  onPointerUp?: (e: React.PointerEvent<HTMLDivElement>) => void;
   /** true เมื่อหน้านี้ลากคลุมข้อความเพื่อสั่งแก้ได้ */
   selectable?: boolean;
 }) {
@@ -92,6 +94,7 @@ export function CaptionTabs({
       <div
         ref={textRef}
         onMouseUp={activeTab === "latest" ? onMouseUp : undefined}
+        onPointerUp={activeTab === "latest" ? onPointerUp : undefined}
         className="select-text rounded-lg bg-surface-container-low/40 p-space-lg text-body-lg text-on-surface"
       >
         {activeTab === "latest" && (

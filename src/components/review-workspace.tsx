@@ -66,6 +66,8 @@ export function ReviewWorkspace({
   const [pendingImage, setPendingImage] = useState<string | null>(null);
   const [noteDraft, setNoteDraft] = useState("");
   const [confirming, setConfirming] = useState<"approve" | "changes" | null>(null);
+  // บนมือถือแผงตรวจลอยติดขอบล่าง เปิด/ปิดได้ จะได้ไม่บังเนื้อหาตอนอ่าน
+  const [sheetOpen, setSheetOpen] = useState(false);
   const textRef = useRef<HTMLDivElement>(null);
 
   const imageList = parseImageUrls(imageUrl ?? null);
@@ -83,7 +85,49 @@ export function ReviewWorkspace({
   function startImageComment(url: string) {
     setPendingImage(url);
     setPendingSelection(null);
+    setSheetOpen(true);
     window.getSelection()?.removeAllRanges();
+  }
+
+  /**
+   * บนมือถือ: แตะที่บรรทัดไหนก็เลือกทั้งบรรทัดนั้นเลย
+   * เพราะลากคลุมข้อความด้วยนิ้วบนจอเล็กทำได้ยากมาก
+   * หาตำแหน่งตัวอักษรที่แตะ แล้วขยายออกไปจนสุดบรรทัดทั้งสองข้าง
+   */
+  function handlePointerUp(e: React.PointerEvent<HTMLDivElement>) {
+    // ใช้เฉพาะตอนจอแคบ (จอเดียวกับที่กล่องโน้ตเป็นแถบลอยด้านล่าง)
+    // จอใหญ่ยังลากคลุมเองเหมือนเดิม
+    if (!window.matchMedia("(max-width: 1023px)").matches) return;
+    if ((window.getSelection()?.toString() ?? "").trim()) return; // ลากเลือกเองอยู่ ไม่ต้องยุ่ง
+
+    const root = textRef.current;
+    if (!root) return;
+    const caret = document.caretRangeFromPoint?.(e.clientX, e.clientY);
+    if (!caret || !root.contains(caret.startContainer)) return;
+
+    // นับตัวอักษรจากต้นกล่องจนถึงจุดที่แตะ
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    let offset = 0;
+    let node: Node | null;
+    while ((node = walker.nextNode())) {
+      if (node === caret.startContainer) {
+        offset += caret.startOffset;
+        break;
+      }
+      offset += node.textContent?.length ?? 0;
+    }
+
+    const full = text.replace(/\r\n/g, "\n");
+    const start = full.lastIndexOf("\n", Math.max(0, offset - 1)) + 1;
+    const endRaw = full.indexOf("\n", offset);
+    const end = endRaw === -1 ? full.length : endRaw;
+    const line = full.slice(start, end).trim();
+
+    if (line) {
+      setPendingSelection(line);
+      setPendingImage(null);
+      setSheetOpen(true);
+    }
   }
 
   function handleMouseUp() {
@@ -100,6 +144,7 @@ export function ReviewWorkspace({
     ) {
       setPendingSelection(selectedText);
       setPendingImage(null);
+      setSheetOpen(true);
     }
   }
 
@@ -173,7 +218,7 @@ export function ReviewWorkspace({
   ];
 
   return (
-    <div className="flex flex-col gap-space-lg">
+    <div className="flex flex-col gap-space-lg pb-20 lg:pb-0">
       {/* รูปอยู่ในนี้ (ไม่ใช่ในหน้าแม่) เพื่อให้ปุ่ม "คอมเมนต์รูปนี้" ต่อเข้ากับโน้ตได้ */}
       <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
         <h2 className="text-headline-sm text-on-surface">รูปภาพประกอบแคปชัน</h2>
@@ -200,6 +245,7 @@ export function ReviewWorkspace({
           marks={marks}
           textRef={textRef}
           onMouseUp={handleMouseUp}
+          onPointerUp={handlePointerUp}
           selectable
         />
       </div>
@@ -207,7 +253,33 @@ export function ReviewWorkspace({
       {/* ติดหน้าจอไว้ทางขวา (เฉพาะจอกว้าง) เหลือเฉพาะเรื่อง "ตรวจงาน" ล้วน ๆ
           ส่วนเรื่อง "อ่านเนื้อหา" ย้ายไปอยู่ในแท็บของกล่องใหญ่ฝั่งซ้ายหมดแล้ว
           กล่องตรวจอยู่นิ่งเสมอ ถ้าเช็กลิสต์ยาวเกินจะเลื่อนแยกในตัวเอง */}
-      <div className="flex min-h-0 flex-col gap-space-lg lg:col-span-5 xl:col-span-4 lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:self-start">
+      {/* จอเล็ก: แผงตรวจลอยติดขอบล่างจอ เลื่อนอ่านตรงไหนก็พิมพ์โน้ตได้ทันที
+          ไม่ต้องเลื่อนผ่านแคปชันทั้งก้อนลงไปหา (แคปชันจริงยาวถึง 8 หน้าจอบนมือถือ)
+          จอใหญ่: กลับไปเป็นคอลัมน์ขวาติดหน้าจอเหมือนเดิม */}
+      <div className="fixed inset-x-0 bottom-0 z-30 flex max-h-[85vh] min-h-0 flex-col gap-space-lg overflow-y-auto rounded-t-xl bg-surface-container-lowest p-space-sm shadow-[0_-4px_16px_rgba(0,0,0,0.12)] lg:static lg:z-auto lg:max-h-[calc(100vh-6rem)] lg:overflow-visible lg:rounded-none lg:bg-transparent lg:p-0 lg:shadow-none lg:col-span-5 xl:col-span-4 lg:sticky lg:top-20 lg:self-start">
+        {/* แถบหัวบนมือถือ — แตะเพื่อเปิด/ปิดแผง */}
+        <button
+          type="button"
+          onClick={() => setSheetOpen((v) => !v)}
+          className="flex items-center justify-between gap-space-sm rounded-lg bg-surface-container-low px-space-md py-2 text-left lg:hidden"
+        >
+          <span className="text-label-md font-semibold text-on-surface">
+            {pendingSelection
+              ? `เลือกไว้: “${pendingSelection.slice(0, 20)}…”`
+              : pendingImage
+                ? `เลือกไว้: ${imageLabel(pendingImage)}`
+                : notes.length > 0
+                  ? `เขียนโน้ตแล้ว ${notes.length} จุด`
+                  : "แตะเพื่อเขียนโน้ต / ส่งผลตรวจ"}
+          </span>
+          <span className="shrink-0 text-label-sm text-on-surface-variant">
+            {sheetOpen ? "ปิด ▾" : "เปิด ▴"}
+          </span>
+        </button>
+
+        <div
+          className={`${sheetOpen ? "flex" : "hidden"} min-h-0 flex-col gap-space-lg lg:flex`}
+        >
         {previousRound.length > 0 && (
           <section className="flex min-h-0 flex-col gap-space-sm rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
             <h2 className="shrink-0 text-headline-sm text-on-surface">
@@ -446,7 +518,7 @@ export function ReviewWorkspace({
             </form>
           )}
         </section>
-
+        </div>
       </div>
       </div>
 
