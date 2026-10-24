@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SortSelect } from "@/components/sort-select";
+import { CopyLinkButton } from "@/components/copy-link-button";
 import { sortCaptions, type SortOrder } from "@/lib/sort-captions";
 import { BRANDS, CHANNELS, type Brand, type Channel, type Caption } from "@/lib/types";
 
@@ -113,6 +114,7 @@ export function ArchiveClient({ allCaptions }: { allCaptions: Caption[] }) {
                     key={caption.id}
                     caption={caption}
                     href={`/items/${caption.id}`}
+                    action={<CopyLinkButton captionId={caption.id} />}
                   />
                 ))}
               </div>
