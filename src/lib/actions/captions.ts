@@ -303,3 +303,60 @@ export async function deleteCaption(
   revalidatePath("/archive");
   redirect("/admin");
 }
+
+export type DuplicateState = {
+  error?: string;
+};
+
+/**
+ * "ทำซ้ำจากชิ้นนี้" (PRD 5.1) — สร้างร่างใหม่ที่ก๊อปข้อมูลเดิมมาให้ครบ
+ *
+ * งานมักมาเป็นชุด (แคมเปญเดียวกันแต่คนละสาย) เดิมต้องสร้างใหม่แล้ววางข้อความ
+ * ใส่รูป เลือกแบรนด์ใหม่ทุกครั้ง ตัวนี้ก๊อปให้หมดแล้วเปิดหน้าแก้ไขให้เลย
+ *
+ * ก๊อปเฉพาะ "ตัวเนื้องาน" — ไม่ก๊อปประวัติเวอร์ชันและโน้ตของหัวหน้ามาด้วย
+ * เพราะของพวกนั้นเป็นของชิ้นเดิม ชิ้นใหม่เริ่มนับหนึ่งเองเป็นร่าง
+ */
+export async function duplicateCaption(
+  _prevState: DuplicateState,
+  formData: FormData
+): Promise<DuplicateState> {
+  const captionId = String(formData.get("captionId") ?? "").trim();
+  if (!captionId) {
+    return { error: "ไม่พบข้อมูลชิ้นงาน กรุณารีเฟรชหน้านี้แล้วลองใหม่" };
+  }
+
+  const [source] = await db
+    .select()
+    .from(captions)
+    .where(and(eq(captions.id, captionId), eq(captions.isDeleted, false)));
+
+  if (!source) {
+    return { error: "ไม่พบชิ้นงานนี้ อาจถูกลบไปแล้ว" };
+  }
+
+  // ใช้ข้อความเวอร์ชันล่าสุดที่ส่งตรวจเป็นตัวตั้งต้น ถ้าไม่มีค่อยใช้ข้อความที่แก้ค้างไว้
+  const [latestVersion] = await db
+    .select({ text: captionVersions.text })
+    .from(captionVersions)
+    .where(eq(captionVersions.captionId, captionId))
+    .orderBy(desc(captionVersions.versionNumber))
+    .limit(1);
+
+  const [created] = await db
+    .insert(captions)
+    .values({
+      title: `${source.title} (สำเนา)`,
+      brand: source.brand,
+      channel: source.channel,
+      scheduledDate: source.scheduledDate,
+      authorName: source.authorName,
+      imageUrl: source.imageUrl,
+      status: "draft",
+      pendingDraftText: latestVersion?.text ?? source.pendingDraftText,
+    })
+    .returning({ id: captions.id });
+
+  revalidatePath("/admin");
+  redirect(`/admin/${created.id}/edit`);
+}

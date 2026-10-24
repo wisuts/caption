@@ -111,7 +111,14 @@ async function applyReview(
   revalidatePath(`/items/${captionId}`);
   revalidatePath("/admin");
   revalidatePath(`/admin/${captionId}`);
-  redirect("/");
+
+  // ส่งผลการตรวจกลับไปโชว์ที่หน้าคิว ไม่งั้นหัวหน้าจะเห็นแค่ชิ้นงานหายไปเฉย ๆ
+  // โดยไม่รู้ว่าบันทึกสำเร็จหรือกดอะไรผิด
+  const done = new URLSearchParams({
+    done: result,
+    n: String(notes.length),
+  });
+  redirect(`/?${done.toString()}`);
 }
 
 export async function approveCaption(

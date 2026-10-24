@@ -9,6 +9,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { SubmitNewVersionButton } from "@/components/submit-new-version-button";
 import { MarkPublishedButton } from "@/components/mark-published-button";
 import { DeleteCaptionButton } from "@/components/delete-caption-button";
+import { DuplicateCaptionButton } from "@/components/duplicate-caption-button";
 import { CaptionImage } from "@/components/caption-image";
 import { CopyCaptionButton } from "@/components/copy-caption-button";
 import { getCaptionByIdDb } from "@/lib/db/queries";
@@ -147,6 +148,7 @@ export default async function AdminItemDetailPage({
               <SubmitNewVersionButton captionId={caption.id} />
             )}
             {canMarkPublished && <MarkPublishedButton captionId={caption.id} />}
+            <DuplicateCaptionButton captionId={caption.id} />
             <DeleteCaptionButton captionId={caption.id} />
           </section>
 

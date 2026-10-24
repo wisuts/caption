@@ -82,6 +82,22 @@ export async function getPendingReviewCaptionsDb(): Promise<Caption[]> {
   return rows.map((row) => toCaption(row, row.versions));
 }
 
+/**
+ * ชิ้นงานที่หัวหน้าสั่งแก้ไปแล้ว รอเจ้าของแก้กลับมา (PRD 4.1)
+ * มีไว้ให้หัวหน้าเห็นว่าที่ตรวจไปบันทึกแล้วจริง และตอนนี้รออีกฝ่ายอยู่
+ */
+export async function getAwaitingOwnerCaptionsDb(): Promise<Caption[]> {
+  const rows = await db.query.captions.findMany({
+    where: and(
+      eq(captions.isDeleted, false),
+      eq(captions.status, "changes_requested")
+    ),
+    orderBy: [desc(captions.updatedAt)],
+    with: { versions: versionsWithNotes },
+  });
+  return rows.map((row) => toCaption(row, row.versions));
+}
+
 /** คลังงานที่ผ่านแล้ว (PRD 4.3) — สถานะ "ผ่าน" และ "ลงแล้ว" เท่านั้น */
 export async function getArchivedCaptionsDb(): Promise<Caption[]> {
   const rows = await db.query.captions.findMany({

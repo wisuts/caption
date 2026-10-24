@@ -9,16 +9,50 @@ import { buttonVariants } from "@/components/ui/button";
 import { sortCaptions, type SortOrder } from "@/lib/sort-captions";
 import type { Caption } from "@/lib/types";
 
+export type JustReviewed = {
+  result: "approved" | "changes_requested";
+  noteCount: number;
+};
+
 // หน้าคิวรอตรวจ (PRD 4.1) — รับข้อมูลจริงจาก server component แม่ (src/app/page.tsx)
-export function ReviewQueueClient({ allCaptions }: { allCaptions: Caption[] }) {
+// แบ่งเป็น "รอคุณตรวจ" (ต้องลงมือ) กับ "รอเจ้าของแก้" (ไม่ต้องทำอะไร แต่ยังไม่จบ)
+// เพราะเดิมพอตรวจเสร็จชิ้นงานหายไปเฉย ๆ หัวหน้าไม่รู้ว่าบันทึกแล้วหรือกดผิด
+export function ReviewQueueClient({
+  allCaptions,
+  awaitingOwner,
+  justReviewed,
+}: {
+  allCaptions: Caption[];
+  awaitingOwner: Caption[];
+  justReviewed: JustReviewed | null;
+}) {
   const [sort, setSort] = useState<SortOrder>("newest");
   const items = useMemo(() => sortCaptions(allCaptions, sort), [allCaptions, sort]);
+  const waiting = useMemo(
+    () => sortCaptions(awaitingOwner, "newest"),
+    [awaitingOwner]
+  );
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-space-lg px-gutter-desktop py-space-xl">
+      {justReviewed && (
+        <div className="flex flex-col gap-space-xs rounded-xl bg-tertiary-fixed p-space-md text-on-tertiary-fixed shadow-sm">
+          <p className="text-body-md font-semibold">
+            {justReviewed.result === "approved"
+              ? "บันทึกแล้ว — ตรวจผ่านเรียบร้อย ✓"
+              : `บันทึกแล้ว — ส่งกลับให้แก้ ${justReviewed.noteCount} จุด ✓`}
+          </p>
+          <p className="text-body-sm">
+            {justReviewed.result === "approved"
+              ? "ชิ้นงานย้ายไปอยู่ในคลังงานที่ผ่านแล้ว"
+              : "ชิ้นงานย้ายไปอยู่ในรายการ “รอเจ้าของแก้” ด้านล่าง รอเจ้าของแก้แล้วส่งกลับมา"}
+          </p>
+        </div>
+      )}
+
       <div className="flex flex-col gap-space-xs">
         <h1 className="text-display-lg text-on-background">
-          รอตรวจ {items.length > 0 && `(${items.length})`}
+          รอคุณตรวจ {items.length > 0 && `(${items.length})`}
         </h1>
         <p className="text-body-md text-on-surface-variant">
           คลิกเลือกรายการเพื่อเปิดอ่านแคปชัน ตรวจรูปประกอบ และส่งผลการตรวจได้ทันที
@@ -26,7 +60,7 @@ export function ReviewQueueClient({ allCaptions }: { allCaptions: Caption[] }) {
       </div>
 
       {items.length === 0 ? (
-        <EmptyState title="ตอนนี้ไม่มีงานรอตรวจ" />
+        <EmptyState title="ตรวจครบแล้ว ตอนนี้ไม่มีงานรอตรวจ" />
       ) : (
         <>
           <div className="flex flex-wrap items-center gap-space-xs rounded-xl bg-surface-container-lowest p-space-md shadow-sm">
@@ -52,6 +86,28 @@ export function ReviewQueueClient({ allCaptions }: { allCaptions: Caption[] }) {
             ))}
           </div>
         </>
+      )}
+
+      {waiting.length > 0 && (
+        <section className="flex flex-col gap-space-md border-t border-surface-container-high pt-space-lg">
+          <div className="flex flex-col gap-space-xs">
+            <h2 className="text-headline-lg text-on-surface-variant">
+              ส่งกลับให้แก้แล้ว — รอเจ้าของ ({waiting.length})
+            </h2>
+            <p className="text-body-sm text-on-surface-variant">
+              ไม่ต้องทำอะไรต่อ กดเข้าไปดูได้ว่ารอบที่แล้วสั่งแก้อะไรไว้
+            </p>
+          </div>
+          <div className="flex flex-col gap-space-md opacity-75">
+            {waiting.map((caption) => (
+              <CaptionRow
+                key={caption.id}
+                caption={caption}
+                href={`/items/${caption.id}`}
+              />
+            ))}
+          </div>
+        </section>
       )}
     </main>
   );

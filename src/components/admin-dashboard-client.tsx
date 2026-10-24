@@ -5,6 +5,8 @@ import { useMemo, useState, type ReactNode } from "react";
 import { CaptionRow } from "@/components/caption-row";
 import { EmptyState } from "@/components/empty-state";
 import { SortSelect } from "@/components/sort-select";
+import { MarkPublishedButton } from "@/components/mark-published-button";
+import { DuplicateCaptionButton } from "@/components/duplicate-caption-button";
 import { sortCaptions, type SortOrder } from "@/lib/sort-captions";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -173,12 +175,20 @@ export function AdminDashboardClient({ allCaptions }: { allCaptions: Caption[] }
               caption={caption}
               href={`/admin/${caption.id}`}
               action={
-                <Link
-                  href={`/admin/${caption.id}`}
-                  className={buttonVariants({ variant: "secondary" })}
-                >
-                  จัดการ
-                </Link>
+                <div className="flex shrink-0 items-center gap-space-xs">
+                  {/* ชิ้นที่ผ่านแล้วมักค้างเพราะต้องเปิดเข้าไปถึงจะกด "ลงแล้ว" ได้
+                      ให้กดจากรายการเลย จะได้ไม่ลืม */}
+                  {caption.status === "approved" && (
+                    <MarkPublishedButton captionId={caption.id} compact />
+                  )}
+                  <DuplicateCaptionButton captionId={caption.id} compact />
+                  <Link
+                    href={`/admin/${caption.id}`}
+                    className={buttonVariants({ variant: "ghost" })}
+                  >
+                    จัดการ
+                  </Link>
+                </div>
               }
             />
           ))}

@@ -32,6 +32,11 @@ export function ArchiveClient({ allCaptions }: { allCaptions: Caption[] }) {
     return sortCaptions(filtered, sort);
   }, [allCaptions, brand, channel, sort]);
 
+  // แยก "ผ่านแล้วแต่ยังไม่ได้เอาไปลง" ออกจาก "ลงแล้ว" เพราะกลุ่มแรกคืองานที่ยังต้องทำต่อ
+  // ถ้าปนกันจะจมหายไปในกองงานที่จบแล้ว
+  const toPost = items.filter((c) => c.status === "approved");
+  const posted = items.filter((c) => c.status === "published");
+
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-space-lg px-gutter-desktop py-space-xl">
       <div className="flex flex-col gap-space-xs">
@@ -91,15 +96,52 @@ export function ArchiveClient({ allCaptions }: { allCaptions: Caption[] }) {
       ) : items.length === 0 ? (
         <EmptyState title="ไม่เจองานที่ตรงกับตัวกรองนี้" />
       ) : (
-        <div className="flex flex-col gap-space-md">
-          {items.map((caption) => (
-            <CaptionRow
-              key={caption.id}
-              caption={caption}
-              href={`/items/${caption.id}`}
-            />
-          ))}
-        </div>
+        <>
+          {toPost.length > 0 && (
+            <section className="flex flex-col gap-space-md">
+              <div className="flex flex-col gap-space-xs">
+                <h2 className="text-headline-lg text-on-surface">
+                  ผ่านแล้ว รอเอาไปลง ({toPost.length})
+                </h2>
+                <p className="text-body-sm text-on-surface-variant">
+                  หัวหน้าตรวจผ่านแล้ว เอาไปโพสต์ได้เลย โพสต์เสร็จกด “ลงแล้ว”
+                </p>
+              </div>
+              <div className="flex flex-col gap-space-md">
+                {toPost.map((caption) => (
+                  <CaptionRow
+                    key={caption.id}
+                    caption={caption}
+                    href={`/items/${caption.id}`}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {posted.length > 0 && (
+            <section
+              className={`flex flex-col gap-space-md ${
+                toPost.length > 0
+                  ? "border-t border-surface-container-high pt-space-lg"
+                  : ""
+              }`}
+            >
+              <h2 className="text-headline-lg text-on-surface-variant">
+                ลงแล้ว ({posted.length})
+              </h2>
+              <div className="flex flex-col gap-space-md">
+                {posted.map((caption) => (
+                  <CaptionRow
+                    key={caption.id}
+                    caption={caption}
+                    href={`/items/${caption.id}`}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+        </>
       )}
     </main>
   );
