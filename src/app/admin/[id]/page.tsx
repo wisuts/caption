@@ -114,6 +114,11 @@ export default async function AdminItemDetailPage({
               <VersionCaptionCard
                 version={latestVersion}
                 headingOverride="ข้อความที่หัวหน้าเห็นอยู่ตอนนี้ (เวอร์ชันล่าสุดที่ส่งตรวจ)"
+                previousText={
+                  caption.versions.find(
+                    (v) => v.versionNumber === latestVersion.versionNumber - 1
+                  )?.text
+                }
               />
             ) : (
               <>
@@ -148,19 +153,16 @@ export default async function AdminItemDetailPage({
             {canMarkPublished && <MarkPublishedButton captionId={caption.id} />}
             <DeleteCaptionButton captionId={caption.id} />
           </section>
-
-          <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
-            <h2 className="text-headline-sm text-on-surface">เวอร์ชันก่อนหน้า</h2>
-            {earlierVersions.length > 0 ? (
-              <VersionTimeline versions={earlierVersions} />
-            ) : (
-              <p className="text-body-sm text-on-surface-variant">
-                ยังไม่มีเวอร์ชันก่อนหน้า
-              </p>
-            )}
-          </section>
         </div>
       </div>
+
+      {/* ประวัติเวอร์ชันวางเต็มความกว้าง ไม่ยัดในคอลัมน์แคบ จะได้อ่านออกจริง */}
+      {earlierVersions.length > 0 && (
+        <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
+          <h2 className="text-headline-sm text-on-surface">ประวัติเวอร์ชันทั้งหมด</h2>
+          <VersionTimeline versions={earlierVersions} />
+        </section>
+      )}
     </main>
   );
 }
