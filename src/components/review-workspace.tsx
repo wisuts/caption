@@ -95,6 +95,8 @@ export function ReviewWorkspace({
 
   // หัวหน้าพิมพ์แก้เองไว้ไหม — ถ้าแก้แล้วกดผ่าน จบงานได้เลยไม่ต้องเด้งกลับหาเจ้าของ
   const hasReviewerEdit = editedText.trim() !== originalText.trim();
+  // พอหัวหน้าแก้แล้ว กล่องแคปชันต้องโชว์ของใหม่เลย ไม่ใช่ย้อนกลับไปของเดิม
+  const shownText = hasReviewerEdit ? editedText : originalText;
 
   const error = changesState.error ?? approveState.error;
   const isPending = isApproving || isRequestingChanges;
@@ -135,7 +137,7 @@ export function ReviewWorkspace({
       offset += node.textContent?.length ?? 0;
     }
 
-    const full = text.replace(/\r\n/g, "\n");
+    const full = shownText;
     const start = full.lastIndexOf("\n", Math.max(0, offset - 1)) + 1;
     const endRaw = full.indexOf("\n", offset);
     const end = endRaw === -1 ? full.length : endRaw;
@@ -208,7 +210,7 @@ export function ReviewWorkspace({
     ...notes.map((n) => ({ id: n.clientId, quotedText: n.quotedText })),
     ...(pendingSelection ? [{ id: PENDING_ID, quotedText: pendingSelection }] : []),
   ];
-  const ordered = orderNotesByPosition(text, notesForOrdering);
+  const ordered = orderNotesByPosition(shownText, notesForOrdering);
   const indexById = new Map(ordered.map((o) => [o.original.id, o.index]));
   const pendingIndex = indexById.get(PENDING_ID) ?? null;
 
@@ -262,7 +264,7 @@ export function ReviewWorkspace({
       <div className="flex flex-col gap-space-lg lg:col-span-7 xl:col-span-8">
         <CaptionTabs
           versionNumber={versionNumber}
-          text={text}
+          text={shownText}
           versions={versions}
           previousText={previousText}
           marks={marks}
