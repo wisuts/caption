@@ -22,6 +22,18 @@ export function getLastReviewedVersion(caption: Caption) {
   return null;
 }
 
+/**
+ * เวอร์ชันที่ถือโน้ตล่าสุดที่เจ้าของยังต้องแก้ตาม (PRD 5.2)
+ * ถ้าเวอร์ชันล่าสุดส่งตรวจไปแล้วแต่หัวหน้ายังไม่ได้ตรวจ โน้ตของรอบก่อนหน้า
+ * คือคำสั่งล่าสุดที่ยังมีผลอยู่ — ไม่งั้นพอกดส่งตรวจปุ๊บ โน้ตกับปุ่ม
+ * "ใช้ข้อความนี้" จะหายจากหน้าแก้ทันที ทั้งที่ยังแก้ไม่ครบ
+ */
+export function getVersionWithOpenNotes(caption: Caption) {
+  const latest = getLatestSubmittedVersion(caption);
+  if (latest && latest.reviewResult !== "pending") return latest;
+  return getLastReviewedVersion(caption) ?? latest;
+}
+
 /** เช็คว่าชิ้นงานนี้มีข้อความแก้ค้างที่ยังไม่ได้ส่งตรวจอยู่หรือไม่ */
 export function hasUnsentEdit(caption: Caption): boolean {
   const latest = getLatestSubmittedVersion(caption);

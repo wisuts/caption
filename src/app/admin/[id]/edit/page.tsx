@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CaptionForm } from "@/components/caption-form";
 import { getCaptionByIdDb, getRecentTitlesDb } from "@/lib/db/queries";
-import { getLatestSubmittedVersion } from "@/lib/caption-helpers";
+import { getVersionWithOpenNotes } from "@/lib/caption-helpers";
 
 export default async function EditCaptionPage({
   params,
@@ -19,7 +19,8 @@ export default async function EditCaptionPage({
     notFound();
   }
 
-  const latestVersion = getLatestSubmittedVersion(caption);
+  // ยึดเวอร์ชันที่หัวหน้าตรวจล่าสุด ไม่ใช่เวอร์ชันที่ส่งไปล่าสุด
+  const notesVersion = getVersionWithOpenNotes(caption);
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-space-lg px-gutter-desktop py-space-xl">
@@ -35,8 +36,8 @@ export default async function EditCaptionPage({
       </div>
       <CaptionForm
         initial={caption}
-        reviewNotes={latestVersion?.notes}
-        reviewedText={latestVersion?.text}
+        reviewNotes={notesVersion?.notes}
+        reviewedText={notesVersion?.text}
         recentTitles={recentTitles}
       />
     </main>
