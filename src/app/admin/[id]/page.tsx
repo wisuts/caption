@@ -3,15 +3,18 @@ import { notFound } from "next/navigation";
 import { BrandBadges } from "@/components/brand-badge";
 import { ChannelBadge } from "@/components/channel-badge";
 import { StatusBadge } from "@/components/status-badge";
-import { VersionTimeline } from "@/components/version-timeline";
-import { VersionCaptionCard } from "@/components/version-caption-card";
+import { CaptionReader } from "@/components/caption-reader";
 import { buttonVariants } from "@/components/ui/button";
 import { SubmitNewVersionButton } from "@/components/submit-new-version-button";
 import { MarkPublishedButton } from "@/components/mark-published-button";
 import { DeleteCaptionButton } from "@/components/delete-caption-button";
 import { CaptionImage } from "@/components/caption-image";
 import { getCaptionByIdDb } from "@/lib/db/queries";
-import { getLatestSubmittedVersion, hasUnsentEdit } from "@/lib/caption-helpers";
+import {
+  getLatestSubmittedVersion,
+  getLastReviewedVersion,
+  hasUnsentEdit,
+} from "@/lib/caption-helpers";
 import { formatThaiDate, formatThaiDateTime } from "@/lib/thai-date";
 
 // หน้ารายละเอียดชิ้นงาน ฝั่งเจ้าของ (PRD 5.3) — ต้อง login (จะป้องกันจริงใน Phase 8)
@@ -28,9 +31,7 @@ export default async function AdminItemDetailPage({
   }
 
   const latestVersion = getLatestSubmittedVersion(caption);
-  const earlierVersions = latestVersion
-    ? caption.versions.filter((v) => v.versionNumber !== latestVersion.versionNumber)
-    : caption.versions;
+  const previousVersion = getLastReviewedVersion(caption);
   const unsentEdit = hasUnsentEdit(caption);
   const canSubmitNewVersion =
     caption.status === "draft" ||
@@ -109,28 +110,25 @@ export default async function AdminItemDetailPage({
             )}
           </section>
 
-          <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
-            {latestVersion ? (
-              <VersionCaptionCard
-                version={latestVersion}
-                headingOverride="ข้อความที่หัวหน้าเห็นอยู่ตอนนี้ (เวอร์ชันล่าสุดที่ส่งตรวจ)"
-                previousText={
-                  caption.versions.find(
-                    (v) => v.versionNumber === latestVersion.versionNumber - 1
-                  )?.text
-                }
-              />
-            ) : (
-              <>
-                <h2 className="text-headline-sm text-on-surface">
-                  ข้อความที่หัวหน้าเห็นอยู่ตอนนี้ (เวอร์ชันล่าสุดที่ส่งตรวจ)
-                </h2>
-                <p className="whitespace-pre-line rounded-lg bg-surface-container-low/40 p-space-lg text-body-lg text-on-surface">
-                  ยังไม่มีเวอร์ชันที่ส่งตรวจ
-                </p>
-              </>
-            )}
-          </section>
+          {/* แท็บเดียวกับหน้าที่หัวหน้าใช้ตรวจ — กดเปิดดูเวอร์ชันเก่าได้เอง
+              ไม่ต้องมีช่องประวัติยาว ๆ ต่อท้ายหน้าอีก */}
+          {latestVersion ? (
+            <CaptionReader
+              versionNumber={latestVersion.versionNumber}
+              text={latestVersion.text}
+              versions={caption.versions}
+              previousText={previousVersion?.text}
+            />
+          ) : (
+            <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
+              <h2 className="text-headline-sm text-on-surface">
+                ข้อความที่หัวหน้าเห็นอยู่ตอนนี้ (เวอร์ชันล่าสุดที่ส่งตรวจ)
+              </h2>
+              <p className="whitespace-pre-line rounded-lg bg-surface-container-low/40 p-space-lg text-body-lg text-on-surface">
+                ยังไม่มีเวอร์ชันที่ส่งตรวจ
+              </p>
+            </section>
+          )}
 
           {unsentEdit && (
             <section className="flex flex-col gap-space-md rounded-xl border border-amber-200 bg-amber-50/60 p-space-lg">
@@ -156,13 +154,6 @@ export default async function AdminItemDetailPage({
         </div>
       </div>
 
-      {/* ประวัติเวอร์ชันวางเต็มความกว้าง ไม่ยัดในคอลัมน์แคบ จะได้อ่านออกจริง */}
-      {earlierVersions.length > 0 && (
-        <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
-          <h2 className="text-headline-sm text-on-surface">ประวัติเวอร์ชันทั้งหมด</h2>
-          <VersionTimeline versions={earlierVersions} />
-        </section>
-      )}
     </main>
   );
 }

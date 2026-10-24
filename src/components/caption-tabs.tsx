@@ -61,14 +61,18 @@ export function CaptionTabs({
   const activeVersion =
     earlierVersions.find((v) => `v${v.versionNumber}` === activeTab) ?? null;
 
+  const currentVersion = versions.find((v) => v.versionNumber === versionNumber);
+  // เวอร์ชันนี้หัวหน้าพิมพ์แก้เองไหม — ต้องบอกให้เห็นชัดตั้งแต่แท็บแรก
+  const byReviewer = currentVersion?.editedByReviewer ?? false;
+
   // ก๊อปได้เฉพาะข้อความที่ตรวจผ่านแล้ว — ที่ยังรอตรวจหรือโดนสั่งแก้ยังไม่ใช่ตัวจริง
-  const latestApproved =
-    versions.find((v) => v.versionNumber === versionNumber)?.reviewResult ===
-    "approved";
+  const latestApproved = currentVersion?.reviewResult === "approved";
 
   const hint =
     activeTab === "diff"
-      ? "เขียว = บรรทัดที่แก้มาใหม่ · ขีดฆ่าสีเทา = ของเดิมที่ถูกแทนที่"
+      ? byReviewer
+        ? "หัวหน้าแก้จากของเดิมตรงนี้ — เขียว = ที่หัวหน้าแก้ใหม่ · ขีดฆ่า = ของเดิมที่หายไป"
+        : "เขียว = บรรทัดที่แก้มาใหม่ · ขีดฆ่าสีเทา = ของเดิมที่ถูกแทนที่"
       : editing && activeTab === "latest"
         ? "พิมพ์แก้ได้เลยเหมือนพิมพ์ในเอกสาร แก้ตรงไหนก็ได้"
       : activeTab !== "latest"
@@ -100,6 +104,11 @@ export function CaptionTabs({
       <div className="flex flex-wrap items-center justify-between gap-space-xs">
         <p className="text-label-sm text-on-surface-variant">{hint}</p>
         <div className="flex items-center gap-space-sm">
+          {activeTab === "latest" && byReviewer && (
+            <span className="rounded bg-tertiary-fixed px-2 py-0.5 text-label-sm font-semibold text-on-tertiary-fixed">
+              หัวหน้าแก้เอง
+            </span>
+          )}
           {activeTab === "latest" && editControl}
           {activeTab === "latest" && latestApproved && (
             <CopyCaptionButton text={text} />

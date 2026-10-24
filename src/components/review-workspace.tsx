@@ -4,7 +4,6 @@ import { useActionState, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { CaptionTabs } from "@/components/caption-tabs";
-import { VersionTimeline } from "@/components/version-timeline";
 import { orderNotesByPosition } from "@/lib/order-notes-by-position";
 import { getPreviousRoundNotes } from "@/lib/previous-round-status";
 import { parseImageUrls } from "@/lib/image-url";
@@ -621,15 +620,6 @@ export function ReviewWorkspace({
       </div>
       </div>
 
-      {/* ประวัติทั้งหมดเต็มความกว้างด้านล่าง อ่านไล่ทุกเวอร์ชันรวดเดียวได้โดยไม่ถูกบีบในคอลัมน์แคบ */}
-      <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
-        <h2 className="text-headline-sm text-on-surface">ประวัติเวอร์ชันทั้งหมด</h2>
-        {versions.length > 0 ? (
-          <VersionTimeline versions={versions} />
-        ) : (
-          <p className="text-body-sm text-on-surface-variant">ยังไม่เคยส่งตรวจ</p>
-        )}
-      </section>
     </div>
   );
 }
