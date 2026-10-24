@@ -15,6 +15,8 @@ type IncomingNote = {
   /** ลิงก์รูปที่โน้ตนี้พูดถึง — ว่างถ้าเป็นโน้ตของตัวหนังสือ */
   imageUrl: string | null;
   note: string;
+  /** null = ไม่ได้เสนอข้อความ, "" = ขอให้ตัดประโยคนี้ออก, อื่น ๆ = ใช้ข้อความนี้แทน */
+  suggestedText: string | null;
 };
 
 /** อ่านและทำความสะอาดรายการโน้ตที่ฝั่ง client ส่งมาเป็น JSON */
@@ -37,8 +39,13 @@ function parseNotes(raw: string): IncomingNote[] {
       const imageRaw = (item as Record<string, unknown>).imageUrl;
       const imageUrl =
         typeof imageRaw === "string" && imageRaw.trim() ? imageRaw.trim() : null;
+      // ตรงนี้ "" กับ null ความหมายต่างกัน จึงเช็กชนิดข้อมูลแทนการเช็กว่าว่างไหม
+      const suggestedRaw = (item as Record<string, unknown>).suggestedText;
+      // เสนอข้อความแทนได้เฉพาะโน้ตที่ชี้ประโยคไว้ ไม่งั้นไม่รู้ว่าจะเอาไปแทนตรงไหน
+      const suggestedText =
+        quotedText && typeof suggestedRaw === "string" ? suggestedRaw.trim() : null;
       if (!note) return null;
-      return { quotedText, imageUrl, note };
+      return { quotedText, imageUrl, note, suggestedText };
     })
     .filter((n): n is IncomingNote => n !== null);
 }
@@ -102,6 +109,7 @@ async function applyReview(
         quotedText: n.quotedText,
         imageUrl: n.imageUrl,
         note: n.note,
+        suggestedText: n.suggestedText,
       }))
     );
   }

@@ -24,6 +24,8 @@ type DraftNote = {
   /** ถ้ามีค่า = โน้ตนี้เป็นของรูปใบนั้น ไม่ใช่ของตัวหนังสือ */
   imageUrl: string | null;
   note: string;
+  /** null = ไม่ได้เสนอข้อความ, "" = ขอให้ตัดประโยคนี้ออก, อื่น ๆ = ใช้ข้อความนี้แทน */
+  suggestedText: string | null;
 };
 
 // พื้นที่ตรวจแคปชัน (PRD 4.2 + ฟีเจอร์ลากคลุมคอมเมนต์เฉพาะจุด)
@@ -65,6 +67,10 @@ export function ReviewWorkspace({
   // รูปที่กำลังจะคอมเมนต์ — เลือกได้ทีละใบ พิมพ์โน้ตแล้วกดเพิ่มเหมือนคอมเมนต์ข้อความ
   const [pendingImage, setPendingImage] = useState<string | null>(null);
   const [noteDraft, setNoteDraft] = useState("");
+  // หัวหน้าเสนอข้อความแทนประโยคที่เลือกได้ เจ้าของจะได้กดใช้เลยไม่ต้องพิมพ์ตาม
+  // "replace" = พิมพ์ข้อความใหม่ให้, "remove" = ขอให้ตัดประโยคนี้ออก
+  const [suggestKind, setSuggestKind] = useState<"replace" | "remove" | null>(null);
+  const [suggestDraft, setSuggestDraft] = useState("");
   const [confirming, setConfirming] = useState<"approve" | "changes" | null>(null);
   // บนมือถือแผงตรวจลอยติดขอบล่าง เปิด/ปิดได้ จะได้ไม่บังเนื้อหาตอนอ่าน
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -85,6 +91,7 @@ export function ReviewWorkspace({
   function startImageComment(url: string) {
     setPendingImage(url);
     setPendingSelection(null);
+    clearSuggestion();
     setSheetOpen(true);
     window.getSelection()?.removeAllRanges();
   }
@@ -126,6 +133,7 @@ export function ReviewWorkspace({
     if (line) {
       setPendingSelection(line);
       setPendingImage(null);
+      clearSuggestion();
       setSheetOpen(true);
     }
   }
@@ -144,6 +152,7 @@ export function ReviewWorkspace({
     ) {
       setPendingSelection(selectedText);
       setPendingImage(null);
+      clearSuggestion();
       setSheetOpen(true);
     }
   }
@@ -158,12 +167,30 @@ export function ReviewWorkspace({
         quotedText: pendingSelection,
         imageUrl: pendingImage,
         note: noteText,
+        suggestedText: suggestedTextForDraft(),
       },
     ]);
     setNoteDraft("");
+    clearSuggestion();
     setPendingSelection(null);
     setPendingImage(null);
+    // บนมือถือแผงนี้บังแคปชันเกือบทั้งจอ ปิดให้เองหลังเพิ่มโน้ตเสร็จ
+    // ไม่งั้นจะแตะเลือกประโยคถัดไปไม่ได้
+    setSheetOpen(false);
     window.getSelection()?.removeAllRanges();
+  }
+
+  /** แปลงสิ่งที่หัวหน้ากรอกไว้เป็นค่าที่จะเก็บ ตามกติกา null / "" / ข้อความ */
+  function suggestedTextForDraft(): string | null {
+    if (!pendingSelection) return null;
+    if (suggestKind === "remove") return "";
+    if (suggestKind === "replace" && suggestDraft.trim()) return suggestDraft.trim();
+    return null;
+  }
+
+  function clearSuggestion() {
+    setSuggestKind(null);
+    setSuggestDraft("");
   }
 
   function removeNote(clientId: string) {
@@ -175,6 +202,7 @@ export function ReviewWorkspace({
       quotedText: n.quotedText,
       imageUrl: n.imageUrl,
       note: n.note,
+      suggestedText: n.suggestedText,
     }))
   );
 
@@ -342,7 +370,10 @@ export function ReviewWorkspace({
                 </span>
                 <button
                   type="button"
-                  onClick={() => setPendingSelection(null)}
+                  onClick={() => {
+                    setPendingSelection(null);
+                    clearSuggestion();
+                  }}
                   className="shrink-0 text-label-sm text-on-surface-variant hover:text-error"
                 >
                   ยกเลิกจุดนี้
@@ -372,6 +403,63 @@ export function ReviewWorkspace({
               placeholder="พิมพ์สิ่งที่ต้องการให้แก้ไขตรงจุดนี้..."
               rows={2}
             />
+            {pendingSelection && (
+              <div className="flex flex-col gap-space-xs rounded-lg bg-surface-container-lowest p-space-sm">
+                {suggestKind === null ? (
+                  <>
+                    <p className="text-label-sm text-on-surface-variant">
+                      อยากให้เป็นแบบไหน? (ไม่ใส่ก็ได้)
+                    </p>
+                    <div className="flex flex-wrap gap-space-xs">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSuggestKind("replace")}
+                      >
+                        เขียนข้อความใหม่ให้
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSuggestKind("remove")}
+                      >
+                        ตัดประโยคนี้ออก
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-between gap-space-sm">
+                      <span className="text-label-sm font-semibold text-on-surface">
+                        {suggestKind === "remove"
+                          ? "ขอให้ตัดประโยคนี้ออก"
+                          : "ข้อความที่อยากให้เป็น"}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={clearSuggestion}
+                        className="shrink-0 text-label-sm text-on-surface-variant hover:text-error"
+                      >
+                        ไม่เอาแล้ว
+                      </button>
+                    </div>
+                    {suggestKind === "replace" && (
+                      <Textarea
+                        value={suggestDraft}
+                        onChange={(e) => setSuggestDraft(e.target.value)}
+                        placeholder="พิมพ์ข้อความที่อยากให้ใช้แทนประโยคนี้..."
+                        rows={2}
+                      />
+                    )}
+                    <p className="text-label-sm text-on-surface-variant">
+                      เจ้าของจะกดใช้ได้ทันที ไม่ต้องพิมพ์ตาม
+                    </p>
+                  </>
+                )}
+              </div>
+            )}
             <Button
               type="button"
               className="w-fit"
@@ -412,6 +500,13 @@ export function ReviewWorkspace({
                         </span>
                       )}
                       <span className="text-body-sm text-on-surface">{n.note}</span>
+                      {n.suggestedText !== null && (
+                        <span className="w-fit rounded bg-tertiary-fixed px-1.5 py-0.5 text-label-sm text-on-tertiary-fixed">
+                          {n.suggestedText === ""
+                            ? "→ ตัดประโยคนี้ออก"
+                            : `→ ใช้แทน: “${n.suggestedText}”`}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <button

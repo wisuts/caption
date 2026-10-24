@@ -98,7 +98,9 @@ export function HighlightedCaptionText({
               {seg.text}
               {seg.index != null && (
                 <span
-                  className={`ml-0.5 inline-flex h-4 w-4 -translate-y-1 items-center justify-center rounded-full align-super text-[10px] font-bold text-white ${TONE_STYLE[seg.tone].badge}`}
+                  // select-none สำคัญ: ถ้าเลขกำกับถูกลากคลุมติดไปด้วย
+                  // ข้อความที่เก็บไว้จะมีเลขปนและหาไม่เจอในแคปชันอีกเลย
+                  className={`ml-0.5 inline-flex h-4 w-4 -translate-y-1 select-none items-center justify-center rounded-full align-super text-[10px] font-bold text-white ${TONE_STYLE[seg.tone].badge}`}
                 >
                   {seg.index}
                 </span>

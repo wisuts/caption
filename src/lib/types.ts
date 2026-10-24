@@ -39,6 +39,11 @@ export interface ReviewNote {
   /** ลิงก์รูปที่โน้ตนี้พูดถึง — ว่างถ้าเป็นโน้ตของตัวหนังสือ */
   imageUrl: string | null;
   note: string;
+  /**
+   * ข้อความที่หัวหน้าอยากให้เป็น — เจ้าของกดใช้แทนได้เลย
+   * null = ไม่ได้เสนอข้อความ, "" = ขอให้ตัดประโยคนี้ออก
+   */
+  suggestedText: string | null;
   createdAt: string;
 }
 

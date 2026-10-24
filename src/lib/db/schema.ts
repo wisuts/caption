@@ -91,6 +91,11 @@ export const reviewNotes = pgTable("review_notes", {
   // เก็บเป็นลิงก์ ไม่ใช่ลำดับที่ เพราะถ้าสลับลำดับรูปทีหลัง ลำดับจะชี้ผิดใบ
   imageUrl: text("image_url"),
   note: text("note").notNull(),
+  // ข้อความที่หัวหน้าอยากให้เป็น เจ้าของกดใช้แทนประโยคเดิมได้เลย ไม่ต้องพิมพ์ตาม
+  //   null  = หัวหน้าไม่ได้เสนอข้อความ มีแต่คอมเมนต์
+  //   ""    = หัวหน้าขอให้ตัดประโยคนี้ออก
+  //   "..." = ใช้ข้อความนี้แทนประโยคเดิม
+  suggestedText: text("suggested_text"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

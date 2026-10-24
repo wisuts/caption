@@ -90,6 +90,13 @@ export function VersionCaptionCard({
                     </span>
                   )}
                   <span className="italic leading-relaxed">{n.note}</span>
+                  {n.suggestedText !== null && (
+                    <span className="w-fit rounded bg-tertiary-fixed px-1.5 py-0.5 text-label-sm text-on-tertiary-fixed">
+                      {n.suggestedText === ""
+                        ? "→ ขอให้ตัดประโยคนี้ออก"
+                        : `→ อยากให้เป็น: “${n.suggestedText}”`}
+                    </span>
+                  )}
                 </div>
               </li>
             ))}

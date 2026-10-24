@@ -25,6 +25,7 @@ function toCaption(row: CaptionRow, versionRows: CaptionVersionRow[]): Caption {
           quotedText: n.quotedText,
           imageUrl: n.imageUrl,
           note: n.note,
+          suggestedText: n.suggestedText,
           createdAt: n.createdAt.toISOString(),
         }));
 
