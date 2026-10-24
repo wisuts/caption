@@ -8,6 +8,7 @@ import { SortSelect } from "@/components/sort-select";
 import { MarkPublishedButton } from "@/components/mark-published-button";
 import { BulkPublishBar } from "@/components/bulk-publish-bar";
 import { CopyLinkButton } from "@/components/copy-link-button";
+import { AutoRefresh } from "@/components/auto-refresh";
 import { sortCaptions, type SortOrder } from "@/lib/sort-captions";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -93,6 +94,7 @@ export function AdminDashboardClient({ allCaptions }: { allCaptions: Caption[] }
           <p className="text-body-md text-on-surface-variant">
             ดูสถานะ เพิ่ม แก้ไข และส่งแคปชันให้หัวหน้าตรวจ
           </p>
+          <AutoRefresh />
         </div>
         <div className="flex items-center gap-space-sm">
           <Link href="/admin/new" className={buttonVariants({ variant: "default" })}>
