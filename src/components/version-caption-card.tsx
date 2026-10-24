@@ -20,7 +20,7 @@ const RESULT_STYLE: Record<CaptionVersion["reviewResult"], string> = {
 
 /**
  * การ์ดแสดงเวอร์ชันเดียว: ข้อความพร้อมไฮไลต์จุดที่หัวหน้าคอมเมนต์ไว้ + ลิสต์โน้ตเลขกำกับตรงกัน
- * ใช้ทั้งใน VersionTimeline (ประวัติทุกเวอร์ชัน) และหน้าเจ้าของ (โฟกัสเวอร์ชันล่าสุด ให้แก้ง่าย)
+ * ใช้ในแท็บ "เวอร์ชัน N" ของกล่องอ่านแคปชัน (CaptionTabs)
  */
 export function VersionCaptionCard({
   version,
@@ -114,13 +114,6 @@ export function VersionCaptionCard({
                     </span>
                   )}
                   <span className="italic leading-relaxed">{n.note}</span>
-                  {n.suggestedText !== null && (
-                    <span className="w-fit rounded bg-tertiary-fixed px-1.5 py-0.5 text-label-sm text-on-tertiary-fixed">
-                      {n.suggestedText === ""
-                        ? "→ ขอให้ตัดประโยคนี้ออก"
-                        : `→ อยากให้เป็น: “${n.suggestedText}”`}
-                    </span>
-                  )}
                 </div>
               </li>
             ))}

@@ -117,22 +117,6 @@ export function CaptionHighlightEditor({
     }
   }
 
-  /**
-   * กด "ใช้ข้อความนี้" → เอาข้อความที่หัวหน้าเสนอไปแทนประโยคเดิมในช่องพิมพ์เลย
-   * ("" แปลว่าหัวหน้าขอให้ตัดออก จึงแทนด้วยค่าว่าง) แล้วติ๊ก "แก้แล้ว" ให้อัตโนมัติ
-   */
-  function applySuggestion(noteId: string, quotedText: string, suggested: string) {
-    const quote = quotedText.replace(/\r\n/g, "\n").trim();
-    const start = text.indexOf(quote);
-    if (start === -1) return;
-    let from = start;
-    const to = start + quote.length;
-    // ตัดประโยคทิ้งทั้งบรรทัด ต้องเก็บบรรทัดว่างที่เหลือไปด้วย ไม่งั้นแคปชันจะมีบรรทัดโหว่
-    if (suggested === "" && text[start - 1] === "\n") from = start - 1;
-    setText(text.slice(0, from) + suggested + text.slice(to));
-    setDoneIds((prev) => (prev.includes(noteId) ? prev : [...prev, noteId]));
-  }
-
   function toggleDone(id: string) {
     setDoneIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
@@ -221,36 +205,9 @@ export function CaptionHighlightEditor({
                     <span className="text-body-sm italic text-on-surface">
                       {note.note}
                     </span>
-                    {note.suggestedText !== null && note.quotedText && (
-                      <div className="flex flex-col items-start gap-1">
-                        {note.suggestedText !== "" && (
-                          <span className="rounded bg-tertiary-fixed px-1.5 py-0.5 text-label-sm text-on-tertiary-fixed">
-                            อยากให้เป็น: “{note.suggestedText}”
-                          </span>
-                        )}
-                        <button
-                          type="button"
-                          disabled={isGone}
-                          onClick={() =>
-                            applySuggestion(
-                              note.id,
-                              note.quotedText as string,
-                              note.suggestedText as string
-                            )
-                          }
-                          className="rounded bg-tertiary px-2 py-1 text-label-sm font-semibold text-on-tertiary hover:brightness-110 disabled:cursor-default disabled:bg-surface-container-high disabled:text-on-surface-variant"
-                        >
-                          {note.suggestedText === ""
-                            ? "ตัดประโยคนี้ออก"
-                            : "ใช้ข้อความนี้"}
-                        </button>
-                      </div>
-                    )}
                     {isGone && (
                       <span className="text-label-sm text-on-surface-variant">
-                        {note.suggestedText !== null
-                          ? "(หัวหน้าแก้ข้อความนี้ให้แล้ว)"
-                          : "(แก้ข้อความตรงนี้ไปแล้ว)"}
+                        (แก้ข้อความตรงนี้ไปแล้ว)
                       </span>
                     )}
                   </div>

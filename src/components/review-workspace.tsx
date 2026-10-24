@@ -24,8 +24,6 @@ type DraftNote = {
   /** ถ้ามีค่า = โน้ตนี้เป็นของรูปใบนั้น ไม่ใช่ของตัวหนังสือ */
   imageUrl: string | null;
   note: string;
-  /** null = ไม่ได้เสนอข้อความ, "" = ขอให้ตัดประโยคนี้ออก, อื่น ๆ = ใช้ข้อความนี้แทน */
-  suggestedText: string | null;
 };
 
 // พื้นที่ตรวจแคปชัน (PRD 4.2 + ฟีเจอร์ลากคลุมคอมเมนต์เฉพาะจุด)
@@ -178,7 +176,6 @@ export function ReviewWorkspace({
         quotedText: pendingSelection,
         imageUrl: pendingImage,
         note: noteText,
-        suggestedText: null,
       },
     ]);
     setNoteDraft("");
@@ -199,7 +196,6 @@ export function ReviewWorkspace({
       quotedText: n.quotedText,
       imageUrl: n.imageUrl,
       note: n.note,
-      suggestedText: n.suggestedText,
     }))
   );
 
@@ -495,13 +491,6 @@ export function ReviewWorkspace({
                         </span>
                       )}
                       <span className="text-body-sm text-on-surface">{n.note}</span>
-                      {n.suggestedText !== null && (
-                        <span className="w-fit rounded bg-tertiary-fixed px-1.5 py-0.5 text-label-sm text-on-tertiary-fixed">
-                          {n.suggestedText === ""
-                            ? "→ ตัดประโยคนี้ออก"
-                            : `→ ใช้แทน: “${n.suggestedText}”`}
-                        </span>
-                      )}
                     </div>
                   </div>
                   <button
